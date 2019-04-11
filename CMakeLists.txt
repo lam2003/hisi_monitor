@@ -16,8 +16,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
-
-
 #如果在选项中加入 -DALL_STATIC=1 使用静态gcc库以及静态g++库进行链接
 if(ALL_STATIC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
