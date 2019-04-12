@@ -43,8 +43,8 @@ link_directories(
 )
 
 include(3rdparty.cmake)
+#×Ô¶¯include
+add_compile_options(-include global.h)
 
-
-
-
+add_subdirectory(monitor)
 
