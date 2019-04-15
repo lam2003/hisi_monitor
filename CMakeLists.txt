@@ -10,6 +10,7 @@ project(hisi_monitor
         LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_SKIP_RPATH true)
+set(ALL_STATIC true)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")

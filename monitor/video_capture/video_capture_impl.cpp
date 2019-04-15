@@ -1,5 +1,6 @@
 #include "video_capture/video_capture_impl.h"
 #include "base/ref_counted_object.h"
+#include "common/res_code.h"
 
 namespace nvr
 {
@@ -16,5 +17,29 @@ void VideoCaptureImpl::RegisterCaptureDataCallback(VideoSinkInterface<VideoFrame
     video_sink_ = video_sink;
 }
 
+void VideoCaptureImpl::DeRegisterCaptureDataCallback()
+{
+    video_sink_ = nullptr;
+}
+
+int32_t VideoCaptureImpl::Initialize(const VideoCaptureCapability &capability)
+{
+    if (init_)
+        return static_cast<int>(KDupInitialize);
+
+    return static_cast<int>(KSuccess);
+}
+
+VideoCaptureImpl::VideoCaptureImpl() : thread_(nullptr),
+                                       run_(false),
+                                       video_sink_(nullptr),
+                                       init_(false)
+{
+}
+
+VideoCaptureImpl::~VideoCaptureImpl()
+{
+    close();
+}
 
 }; // namespace nvr

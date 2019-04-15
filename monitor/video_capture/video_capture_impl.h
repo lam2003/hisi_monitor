@@ -2,7 +2,7 @@
 #define VIDEO_CAPTURE_IMPL_H_
 
 #include "video_capture/video_capture.h"
-#include "video_capture/video_capture_capability.h" 
+#include "video_capture/video_capture_capability.h"
 
 #include <thread>
 #include <memory>
@@ -36,11 +36,10 @@ protected:
     ~VideoCaptureImpl() override;
 
 private:
-    VideoSinkInterface<VideoFrame> *video_sink_;
-    bool run_;
-    std::unique_ptr<std::thread> thread_;
     std::mutex mux_;
-
+    std::unique_ptr<std::thread> thread_;
+    bool run_;
+    VideoSinkInterface<VideoFrame> *video_sink_;
     bool init_;
 };
 } // namespace nvr

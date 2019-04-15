@@ -1,11 +1,7 @@
 include(ExternalProject)
 
 set(USE_FAST_COMPLIE true)
-set(USE_CROSS_COMPLIE true)
-
-if(USE_CROSS_COMPLIE)
 set(CROSS_COMPLIE_OPTION -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-hisiv500-linux-gcc -DCMAKE_CXX_COMPILER=arm-hisiv500-linux-g++)
-endif()
 
 if(USE_FAST_COMPLIE)
 set(FAST_COMPLIE_OPTION -j4)
@@ -40,4 +36,14 @@ ExternalProject_Add(EasyLogger
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make ${FAST_COMPLIE_OPTION}
     INSTALL_COMMAND make install && cp ${PROJECT_BINARY_DIR}/EasyLogger/build/include ${PROJECT_BINARY_DIR} -rf && cp ${PROJECT_BINARY_DIR}/EasyLogger/build/lib ${PROJECT_BINARY_DIR} -rf
+    )
+#hisi sdk
+ExternalProject_Add(hisi_sdk
+    URL https://github.com/lam2003/monitor_3rdparty/raw/master/hisi_sdk.tar.gz
+    DOWNLOAD_NAME hisi_sdk.tar.gz
+    SOURCE_DIR hisi_sdk
+    CONFIGURE_COMMAND ""
+    BUILD_IN_SOURCE 1
+    BUILD_COMMAND ""
+    INSTALL_COMMAND cp ${PROJECT_BINARY_DIR}/hisi_sdk/include ${PROJECT_BINARY_DIR} -rf && cp ${PROJECT_BINARY_DIR}/hisi_sdk/lib ${PROJECT_BINARY_DIR} -rf
     )
