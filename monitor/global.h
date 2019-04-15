@@ -7,9 +7,15 @@
 #include <stdlib.h>
 //system
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <errno.h>
 //logger
 #include <elog.h>
 //hisi sdk
+
 #include <hi_common.h>
 #include <hi_comm_sys.h>
 #include <hi_comm_vb.h>
@@ -25,6 +31,7 @@
 #include <hi_comm_ao.h>
 #include <hi_comm_aio.h>
 #include <hi_defines.h>
+#include <hi_mipi.h>
 #include <mpi_sys.h>
 #include <mpi_vb.h>
 #include <mpi_vi.h>
@@ -43,9 +50,12 @@
 #include <hi_vreg.h>
 #include <hi_sns_ctrl.h>
 
-#define NVR_CHECK(condition) \
-    while (!(condition))     \
-    log_e("check %s failed", #condition)
+#define NVR_CHECK(condition)                  \
+    while (!(condition))                      \
+    {                                         \
+        log_e("failed when checking %s", #condition); \
+        exit(static_cast<int>(KCheckError));  \
+    }
 
 // arm-hisiv500-linux-g++²»Ö§³Ö
 // template<typename T>

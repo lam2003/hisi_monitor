@@ -2,7 +2,6 @@
 #define VIDEO_CAPTURE_IMPL_H_
 
 #include "video_capture/video_capture.h"
-#include "video_capture/video_capture_capability.h"
 
 #include <thread>
 #include <memory>
@@ -14,7 +13,7 @@ class VideoCaptureImpl : public VideoCaptureModule
 {
 public:
     static rtc::scoped_refptr<VideoCaptureModule>
-    Create(const VideoCaptureCapability &capability);
+    Create();
 
     void RegisterCaptureDataCallback(
         VideoSinkInterface<VideoFrame> *dataCallback) override;
@@ -27,7 +26,7 @@ public:
 
     bool CaptureStarted() override;
 
-    int32_t Initialize(const VideoCaptureCapability &capability);
+    int32_t Initialize();
 
     void close();
 

@@ -1,11 +1,13 @@
 
+#include <iostream>
 
 #include "common/config.h"
 #include "common/utils.h"
+#include "video_capture/video_capture_impl.h"
 
 using namespace nvr;
 
-void init_log()
+void InitLogger()
 {
     setbuf(stdout, NULL);
     elog_init();
@@ -17,13 +19,12 @@ void init_log()
     elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
     elog_set_text_color_enabled(true);
     elog_start();
-} 
+}
 
-int32_t init_hisi_mmp()
+int32_t InitMPP()
 {
     int32_t ret;
     int32_t pic_vb_blk_size = Utils::CalcPicVbBlkSize();
-    log_d("[pic_vb_blk_size]:%d bytes", pic_vb_blk_size);
 
     VB_CONF_S vb_cfg;
     memset(&vb_cfg, 0, sizeof(VB_CONF_S));
@@ -71,11 +72,40 @@ int32_t init_hisi_mmp()
 
 int main(int argc, char **argv)
 {
+    err_code code;
+    uint64_t start_time, end_time;
 
     //初始化日志系统
-    init_log();
-    // 初始化海思sdk
-    log_d("initializing hisi mpp...");
+    InitLogger();
+
+    //初始化海思sdk
+    log_i("initializing mpp...");
+
+    start_time = Utils::GetSteadyMicroSeconds();
+
+    code = static_cast<err_code>(InitMPP());
+    if (KSuccess != code)
+    {
+        log_e("error:%s", make_error_code(code).message().c_str());
+        return static_cast<int>(code);
+    }
+
+    end_time = Utils::GetSteadyMicroSeconds();
+
+    log_i("mpp initialize succeed,cost %lu us", end_time - start_time);
+
+    //初始化视频采集模块
+    log_i("initializing video capture...");
+
+    // start_time = Utils::GetSteadyMicroSeconds();
+
+    // VideoCaptureModule *video_capture_module = VideoCaptureImpl::Create();
+
+    // NVR_CHECK(NULL != video_capture_module)
+
+    // end_time = Utils::GetSteadyMicroSeconds();
+
+    // log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
 
     sleep(1);
     return 0;

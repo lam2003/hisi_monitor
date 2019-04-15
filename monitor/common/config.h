@@ -4,9 +4,19 @@
 #include <mutex>
 #include <string>
 
-#define PIXEL_FORMAT PIXEL_FORMAT_YUV_SEMIPLANAR_420 //1.5 bytes per pixel
-#define PIC_SIZE PIC_HD1080                          //sony mx290 with 1080p resolution
-#define ALIGN 64                                     //default align
+#define PIXEL_FORMAT PIXEL_FORMAT_YUV_SEMIPLANAR_420 //使用YUV420P
+#define PIC_SIZE PIC_HD1080                          //与相机有关,现使用SONY MX290,分辨率1080P
+#define ALIGN 64                                     //默认内存对齐大小
+#define VB_POOLS_NUM 128                             //缓冲池数量
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+  extern combo_dev_attr_t KMipiCfg;
+#ifdef __cplusplus
+}
+#endif
 
 namespace nvr
 {
@@ -15,7 +25,7 @@ struct Config
     struct System
     {
         int vb_pools_num;
-        System() : vb_pools_num(128)
+        System() : vb_pools_num(VB_POOLS_NUM)
         {
         }
     };
@@ -23,7 +33,7 @@ struct Config
     {
         PIC_SIZE_E pic_size;
 
-        Video() : pic_size(PIC_HD1080)
+        Video() : pic_size(PIC_SIZE)
         {
         }
     };

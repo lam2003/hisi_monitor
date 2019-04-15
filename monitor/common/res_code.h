@@ -9,28 +9,34 @@ enum err_code
     KDupInitialize = 0x1,
     KArgsError = 0x2,
     KMPPError = 0x3,
+    KDeviceError = 0x4,
+    KCheckError = 0x5
 };
 
-class nvr_error_category : public std::error_category
+class NVRErrorCategory : public std::error_category
 {
     const char *name() const noexcept override
     {
-        return "video_capture";
+        return "nvr";
     }
     std::string message(int i) const override
     {
         switch (static_cast<err_code>(i))
         {
         case err_code::KSuccess:
-            return "成功";
+            return "success";
         case err_code::KDupInitialize:
-            return "重复初始化";
+            return "duplicate initialize";
         case err_code::KArgsError:
-            return "参数错误";
+            return "argument wrong";
         case err_code::KMPPError:
-            return "海思mpp错误";
+            return "hisi mpp error";
+        case err_code::KDeviceError:
+            return "device error";
+        case err_code::KCheckError:
+            return "check error";
         default:
-            return "不明";
+            return "unknow";
         }
     }
 };
@@ -48,9 +54,12 @@ struct is_error_code_enum : std::false_type
 {
 };
 
-inline std::error_code make_error_code(err_code code) noexcept
+static NVRErrorCategory nvr_error_category;
+
+inline std::error_code
+make_error_code(err_code code) noexcept
 {
-    return {static_cast<int>(code), nvr_error_category()};
+    return {static_cast<int>(code), nvr_error_category};
 }
 
 #endif
