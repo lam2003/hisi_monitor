@@ -9,8 +9,9 @@ enum err_code
     KDupInitialize = 0x1,
     KArgsError = 0x2,
     KMPPError = 0x3,
-    KDeviceError = 0x4,
-    KCheckError = 0x5
+    KMIPIError = 0x4,
+    KCheckError = 0x5,
+    KISPError = 0x6
 };
 
 class NVRErrorCategory : public std::error_category
@@ -31,10 +32,12 @@ class NVRErrorCategory : public std::error_category
             return "argument wrong";
         case err_code::KMPPError:
             return "hisi mpp error";
-        case err_code::KDeviceError:
-            return "device error";
+        case err_code::KMIPIError:
+            return "hisi mipi error";
         case err_code::KCheckError:
             return "check error";
+        case err_code::KISPError:
+            return "hisi isp error";
         default:
             return "unknow";
         }

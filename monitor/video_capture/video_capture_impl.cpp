@@ -9,11 +9,11 @@ namespace nvr
 rtc::scoped_refptr<VideoCaptureModule> VideoCaptureImpl::Create()
 {
     err_code code;
-    
+
     rtc::scoped_refptr<VideoCaptureImpl> implemention(new rtc::RefCountedObject<VideoCaptureImpl>());
-    
+
     code = static_cast<err_code>(implemention->Initialize());
-    
+
     if (KSuccess != code)
     {
         log_e("error:%s", make_error_code(code).message().c_str());
@@ -33,17 +33,14 @@ void VideoCaptureImpl::DeRegisterCaptureDataCallback()
     video_sink_ = nullptr;
 }
 
-int32_t VideoCaptureImpl::Initialize()
+int32_t VideoCaptureImpl::StartMIPI()
 {
-    if (init_)
-        return static_cast<int>(KDupInitialize);
-
     //初始化mipi(Mobile Idustry Processor Interface)
     int32_t fd = open("/dev/hi_mipi", O_RDWR);
     if (fd < 0)
     {
         log_e("open hisi mipi device failed,%s", strerror(errno));
-        return static_cast<int>(KDeviceError);
+        return static_cast<int>(KMIPIError);
     }
 
     //开始配置mipi
@@ -56,7 +53,7 @@ int32_t VideoCaptureImpl::Initialize()
     if (ioctl(fd, HI_MIPI_SET_DEV_ATTR, &KMipiCfg))
     {
         log_e("configure mipi failed,%s", strerror(errno));
-        return static_cast<int>(KDeviceError);
+        return static_cast<int>(KMIPIError);
     }
 
     usleep(10000); //10ms
@@ -69,6 +66,101 @@ int32_t VideoCaptureImpl::Initialize()
 
     ::close(fd);
 
+    return static_cast<int>(KSuccess);
+}
+
+int32_t VideoCaptureImpl::StartISP()
+{
+    int32_t ret;
+
+    ret = sensor_register_callback();
+    if (HI_SUCCESS != ret)
+    {
+        log_e("sensor_register_callback failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    ISP_DEV isp_dev;
+    memset(&isp_dev, 0, sizeof(isp_dev));
+
+    ALG_LIB_S alg_lib;
+    memset(&alg_lib, 0, sizeof(alg_lib));
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AE_LIB_NAME, 20);
+    ret = HI_MPI_AE_Register(isp_dev, &alg_lib);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_AE_Register failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AWB_LIB_NAME, 20);
+    ret = HI_MPI_AWB_Register(isp_dev, &alg_lib);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_AWB_Register failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AF_LIB_NAME, 20);
+    ret = HI_MPI_AF_Register(isp_dev, &alg_lib);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_AF_Register failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    ret = HI_MPI_ISP_MemInit(isp_dev);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_ISP_Init failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    ISP_WDR_MODE_S wdr_mode;
+    memset(&wdr_mode, 0, sizeof(wdr_mode));
+    wdr_mode.enWDRMode = WDR_MODE_NONE;
+    ret = HI_MPI_ISP_SetWDRMode(0, &wdr_mode);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_ISP_SetWDRMode failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    ret = HI_MPI_ISP_SetPubAttr(isp_dev, &KISPPubAttr);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_ISP_SetPubAttr failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    ret = HI_MPI_ISP_Init(isp_dev);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_ISP_Init failed,code %#x", ret);
+        return static_cast<int>(KISPError);
+    }
+
+    return static_cast<int>(KSuccess);
+};
+
+int32_t VideoCaptureImpl::Initialize()
+{
+    if (init_)
+        return static_cast<int>(KDupInitialize);
+
+    err_code code;
+
+    code = static_cast<err_code>(StartMIPI());
+    if (KSuccess != code)
+        return code;
+
+    code = static_cast<err_code>(StartISP());
+    if (KSuccess != code)
+        return code;
     return static_cast<int>(KSuccess);
 }
 

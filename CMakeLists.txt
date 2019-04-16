@@ -31,7 +31,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE true)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_CLAGS} -D__CMAKE_FILE__='\"$(notdir $(abspath $<))\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_CLAGS} -mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections -D__CMAKE_FILE__='\"$(notdir $(abspath $<))\"'")
 
 
 include_directories(

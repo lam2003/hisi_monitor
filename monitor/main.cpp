@@ -97,15 +97,15 @@ int main(int argc, char **argv)
     //初始化视频采集模块
     log_i("initializing video capture...");
 
-    // start_time = Utils::GetSteadyMicroSeconds();
+    start_time = Utils::GetSteadyMicroSeconds();
 
-    // VideoCaptureModule *video_capture_module = VideoCaptureImpl::Create();
+    VideoCaptureModule *video_capture_module = VideoCaptureImpl::Create();
 
-    // NVR_CHECK(NULL != video_capture_module)
+    NVR_CHECK(NULL != video_capture_module)
 
-    // end_time = Utils::GetSteadyMicroSeconds();
+    end_time = Utils::GetSteadyMicroSeconds();
 
-    // log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
+    log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
 
     sleep(1);
     return 0;

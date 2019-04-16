@@ -31,6 +31,10 @@ public:
     void close();
 
 protected:
+    int32_t StartMIPI();
+
+    int32_t StartISP();
+
     VideoCaptureImpl();
     ~VideoCaptureImpl() override;
 

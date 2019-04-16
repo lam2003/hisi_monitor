@@ -14,6 +14,7 @@ extern "C"
 {
 #endif
   extern combo_dev_attr_t KMipiCfg;
+  extern ISP_PUB_ATTR_S KISPPubAttr;
 #ifdef __cplusplus
 }
 #endif
