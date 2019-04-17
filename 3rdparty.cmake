@@ -11,7 +11,7 @@ ExternalProject_Add(libav
     URL https://github.com/lam2003/monitor_3rdparty/raw/master/libav-12.3.tar.gz
     DOWNLOAD_NAME libav-12.3.tar.gz
     SOURCE_DIR libav
-    CONFIGURE_COMMAND     cd ${PROJECT_BINARY_DIR}/libav && ./configure --arch=arm  --cross-prefix=arm-hisiv500-linux- --enable-static --disable-shared  --enable-cross-compile --target_os=linux --prefix=${PROJECT_BINARY_DIR}/libav/build CFLAGS=${COMPLIE_ARGS}  CXXFLAGS=${COMPLIE_ARGS}
+    CONFIGURE_COMMAND     cd ${PROJECT_BINARY_DIR}/libav && ./configure --arch=arm  --cross-prefix=arm-hisiv500-linux- --enable-static --disable-shared  --enable-cross-compile --target_os=linux --prefix=${PROJECT_BINARY_DIR}/libav/build --extra-cflags=${COMPLIE_ARGS} 
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make ${FAST_COMPLIE_OPTION}
     INSTALL_COMMAND make install && cp ${PROJECT_BINARY_DIR}/libav/build/include ${PROJECT_BINARY_DIR} -rf && cp ${PROJECT_BINARY_DIR}/libav/build/lib ${PROJECT_BINARY_DIR} -rf
