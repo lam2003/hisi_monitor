@@ -14,7 +14,8 @@ enum err_code
     KISPError = 0x6,
     KVIError = 0x7,
     KVIChnError = 0x8,
-    KUnInitialize = 0x9
+    KUnInitialize = 0x9,
+    KOSDError = 0xA,
 };
 
 class NVRErrorCategory : public std::error_category
@@ -47,6 +48,8 @@ class NVRErrorCategory : public std::error_category
             return "hisi vi chn error";
         case err_code::KUnInitialize:
             return "uninitialize";
+        case err_code::KOSDError:
+            return "osd error";
         default:
             return "unknow";
         }

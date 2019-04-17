@@ -6,6 +6,9 @@
 #include "common/utils.h"
 #include "video_capture/video_capture_impl.h"
 
+
+#include "video_process/osd.h"
+
 using namespace nvr;
 
 void InitLogger()
@@ -29,7 +32,7 @@ int32_t InitMPP()
 
     VB_CONF_S vb_cfg;
     memset(&vb_cfg, 0, sizeof(VB_CONF_S));
-    vb_cfg.u32MaxPoolCnt = Config::Instance()->system.vb_pools_num;
+    vb_cfg.u32MaxPoolCnt = VB_POOLS_NUM;
     vb_cfg.astCommPool[0].u32BlkSize = pic_vb_blk_size;
     vb_cfg.astCommPool[0].u32BlkCnt = 10;
 
@@ -79,38 +82,40 @@ int main(int argc, char **argv)
     //初始化日志系统
     InitLogger();
 
-    //初始化海思sdk
-    log_i("initializing mpp...");
+    // //初始化海思sdk
+    // log_i("initializing mpp...");
 
-    start_time = Utils::GetSteadyMicroSeconds();
+    // start_time = Utils::GetSteadyMicroSeconds();
 
-    code = static_cast<err_code>(InitMPP());
-    if (KSuccess != code)
-    {
-        log_e("error:%s", make_error_code(code).message().c_str());
-        return static_cast<int>(code);
-    }
+    // code = static_cast<err_code>(InitMPP());
+    // if (KSuccess != code)
+    // {
+    //     log_e("error:%s", make_error_code(code).message().c_str());
+    //     return static_cast<int>(code);
+    // }
 
-    end_time = Utils::GetSteadyMicroSeconds();
+    // end_time = Utils::GetSteadyMicroSeconds();
 
-    log_i("mpp initialize succeed,cost %lu us", end_time - start_time);
+    // log_i("mpp initialize succeed,cost %lu us", end_time - start_time);
 
-    //初始化视频采集模块
-    log_i("initializing video capture...");
+    // //初始化视频采集模块
+    // log_i("initializing video capture...");
 
-    start_time = Utils::GetSteadyMicroSeconds();
+    // start_time = Utils::GetSteadyMicroSeconds();
 
-    rtc::scoped_refptr<VideoCaptureModule> video_capture_module = VideoCaptureImpl::Create();
-    NVR_CHECK(NULL != video_capture_module)
+    // rtc::scoped_refptr<VideoCaptureModule> video_capture_module = VideoCaptureImpl::Create();
+    // NVR_CHECK(NULL != video_capture_module)
 
-    video_capture_module->StartCapture();
+    // video_capture_module->StartCapture();
 
-    end_time = Utils::GetSteadyMicroSeconds();
+    // end_time = Utils::GetSteadyMicroSeconds();
    
-    log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
+    // log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
     
-    while(1)
-        sleep(10);
+    // while(1)
+    //     sleep(10);
+
+    OSD::Instance()->Initialize();
 
     return 0;
 }

@@ -10,7 +10,7 @@ class VideoSinkInterface
 public:
     virtual ~VideoSinkInterface() = default;
 
-    virtual void onFrame(const  VideoFrameT &frame) = 0;
+    virtual void OnFrame(const  VideoFrameT &frame) = 0;
 };
 
 } // namespace nvr
