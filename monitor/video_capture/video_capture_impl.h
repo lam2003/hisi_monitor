@@ -16,15 +16,13 @@ public:
     Create();
 
     void RegisterCaptureDataCallback(
-        VideoSinkInterface<VideoFrame> *dataCallback) override;
+        VideoSinkInterface<VIDEO_FRAME_INFO_S> *dataCallback) override;
 
     void DeRegisterCaptureDataCallback() override;
 
     int32_t StartCapture() override;
 
     int32_t StopCapture() override;
-
-    bool CaptureStarted() override;
 
     int32_t Initialize();
 
@@ -33,16 +31,24 @@ public:
 protected:
     int32_t StartMIPI();
 
-    int32_t StartISP();
+    int32_t InitISP();
+
+    void StartISP();
+
+    int32_t StartVI();
+
+    int32_t StartVIChn();
 
     VideoCaptureImpl();
     ~VideoCaptureImpl() override;
 
 private:
     std::mutex mux_;
-    std::unique_ptr<std::thread> thread_;
+    int32_t vi_chn_fd_;
+    std::unique_ptr<std::thread> capture_thread_;
+    std::unique_ptr<std::thread> isp_thread_;
     bool run_;
-    VideoSinkInterface<VideoFrame> *video_sink_;
+    VideoSinkInterface<VIDEO_FRAME_INFO_S> *video_sink_;
     bool init_;
 };
 } // namespace nvr

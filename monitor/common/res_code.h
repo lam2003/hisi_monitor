@@ -11,7 +11,10 @@ enum err_code
     KMPPError = 0x3,
     KMIPIError = 0x4,
     KCheckError = 0x5,
-    KISPError = 0x6
+    KISPError = 0x6,
+    KVIError = 0x7,
+    KVIChnError = 0x8,
+    KUnInitialize = 0x9
 };
 
 class NVRErrorCategory : public std::error_category
@@ -38,6 +41,12 @@ class NVRErrorCategory : public std::error_category
             return "check error";
         case err_code::KISPError:
             return "hisi isp error";
+        case err_code::KVIError:
+            return "hisi vi error";
+        case err_code::KVIChnError:
+            return "hisi vi chn error";
+        case err_code::KUnInitialize:
+            return "uninitialize";
         default:
             return "unknow";
         }

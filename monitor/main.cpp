@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <exception>
 
 #include "common/config.h"
 #include "common/utils.h"
@@ -99,14 +100,17 @@ int main(int argc, char **argv)
 
     start_time = Utils::GetSteadyMicroSeconds();
 
-    VideoCaptureModule *video_capture_module = VideoCaptureImpl::Create();
-
+    rtc::scoped_refptr<VideoCaptureModule> video_capture_module = VideoCaptureImpl::Create();
     NVR_CHECK(NULL != video_capture_module)
 
+    video_capture_module->StartCapture();
+
     end_time = Utils::GetSteadyMicroSeconds();
-
+   
     log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
+    
+    while(1)
+        sleep(10);
 
-    sleep(1);
     return 0;
 }

@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/prctl.h>
 #include <fcntl.h>
 #include <errno.h>
 //logger
