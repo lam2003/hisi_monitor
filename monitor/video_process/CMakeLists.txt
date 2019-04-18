@@ -1,12 +1,12 @@
-add_library(video_process osd.cpp)
-add_dependencies(video_process 
-    SDL2_ttf 
-    SDL2 
-    freetype
-    )
+add_library(video_process 
+    osd.cpp
+    video_process_impl.cpp
+)
 
-target_link_libraries(video_process 
-    libSDL2_ttf.a 
-    libSDL2.a 
-    libfreetype.a
-    )
+
+add_dependencies(video_process
+    common
+    SDL2_ttf
+)
+
+

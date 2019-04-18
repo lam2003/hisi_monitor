@@ -7,15 +7,10 @@ enum err_code
 {
     KSuccess = 0x0,
     KDupInitialize = 0x1,
-    KArgsError = 0x2,
     KMPPError = 0x3,
-    KMIPIError = 0x4,
-    KCheckError = 0x5,
-    KISPError = 0x6,
-    KVIError = 0x7,
-    KVIChnError = 0x8,
-    KUnInitialize = 0x9,
-    KOSDError = 0xA,
+    KVIChnError = 0x4,
+    KUnInitialize = 0x5,
+    KThirdPartyError = 0x6,
 };
 
 class NVRErrorCategory : public std::error_category
@@ -32,24 +27,12 @@ class NVRErrorCategory : public std::error_category
             return "success";
         case err_code::KDupInitialize:
             return "duplicate initialize";
-        case err_code::KArgsError:
-            return "argument wrong";
         case err_code::KMPPError:
             return "hisi mpp error";
-        case err_code::KMIPIError:
-            return "hisi mipi error";
-        case err_code::KCheckError:
-            return "check error";
-        case err_code::KISPError:
-            return "hisi isp error";
-        case err_code::KVIError:
-            return "hisi vi error";
-        case err_code::KVIChnError:
-            return "hisi vi chn error";
         case err_code::KUnInitialize:
             return "uninitialize";
-        case err_code::KOSDError:
-            return "osd error";
+        case err_code::KThirdPartyError:
+            return "thirdparty library error";
         default:
             return "unknow";
         }

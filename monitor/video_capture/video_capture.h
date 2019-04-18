@@ -11,14 +11,10 @@ namespace nvr
 class VideoCaptureModule : public rtc::RefCountInterface
 {
 public:
-    virtual void RegisterCaptureDataCallback(
-        VideoSinkInterface<VIDEO_FRAME_INFO_S> *dataCallback) = 0;
 
-    virtual void DeRegisterCaptureDataCallback() = 0;
+    virtual int32_t Initialize() = 0;
 
-    virtual int32_t StartCapture() = 0;
-
-    virtual int32_t StopCapture() = 0;
+    virtual void close() = 0;
 
 protected:
     ~VideoCaptureModule() override {}

@@ -1,10 +1,7 @@
 include(ExternalProject)
 
 set(COMPLIE_ARGS "-mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections")
-
-if(USE_FAST_COMPLIE)
 set(FAST_COMPLIE_OPTION -j4)
-endif()
 
 #libav
 ExternalProject_Add(libav
@@ -21,7 +18,7 @@ ExternalProject_Add(jsoncpp
     URL https://github.com/lam2003/monitor_3rdparty/raw/master/jsoncpp-0.10.7.zip
     DOWNLOAD_NAME jsoncpp-0.10.7.zip
     SOURCE_DIR jsoncpp
-    CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/jsoncpp && cmake . -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/jsoncpp/build
+    CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/jsoncpp && cmake . -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-hisiv500-linux-gcc -DCMAKE_CXX_COMPILER=arm-hisiv500-linux-g++ -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/jsoncpp/build
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make ${FAST_COMPLIE_OPTION}
     INSTALL_COMMAND make install && cp ${PROJECT_BINARY_DIR}/jsoncpp/build/include ${PROJECT_BINARY_DIR} -rf && cp ${PROJECT_BINARY_DIR}/jsoncpp/build/lib ${PROJECT_BINARY_DIR} -rf
@@ -31,7 +28,7 @@ ExternalProject_Add(EasyLogger
     URL https://github.com/lam2003/monitor_3rdparty/raw/master/EasyLogger.tar.gz
     DOWNLOAD_NAME EasyLogger.tar.gz
     SOURCE_DIR EasyLogger
-    CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/EasyLogger && cmake . -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EasyLogger/build
+    CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/EasyLogger && cmake . -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-hisiv500-linux-gcc -DCMAKE_CXX_COMPILER=arm-hisiv500-linux-g++ -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EasyLogger/build
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make ${FAST_COMPLIE_OPTION}
     INSTALL_COMMAND make install && cp ${PROJECT_BINARY_DIR}/EasyLogger/build/include ${PROJECT_BINARY_DIR} -rf && cp ${PROJECT_BINARY_DIR}/EasyLogger/build/lib ${PROJECT_BINARY_DIR} -rf

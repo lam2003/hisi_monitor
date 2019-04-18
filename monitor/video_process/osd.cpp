@@ -29,14 +29,14 @@ int32_t OSD::Initialize()
     if (TTF_Init() < 0)
     {
         log_e("TTF_Init failed");
-        return static_cast<int>(KOSDError);
+        return static_cast<int>(KThirdPartyError);
     }
 
     font_ = TTF_OpenFont(Config::Instance()->system.font_path.c_str(), Config::Instance()->system.font_size);
     if (NULL == font_)
     {
         log_e("TTF_OpenFont failed");
-        return static_cast<int>(KOSDError);
+        return static_cast<int>(KThirdPartyError);
     }
 
     SDL_Color color = {0x0, 0x0, 0x0, 0x00};

@@ -1,39 +1,45 @@
+add_subdirectory(common)
 add_subdirectory(video_capture)
 add_subdirectory(video_process)
-add_subdirectory(common)
 
-add_executable(monitor main.cpp)
 
-set(MPP_LIBS 
-    mpi
-    ive 
-    md 
-    VoiceEngine 
-    upvqe 
-    dnvqe 
-    _hiae 
-    isp 
-    sns_imx290 
-    _hiae 
-    _hiawb 
-    _hiaf 
-    _hidefog
-    )
+add_executable(monitor 
+    main.cpp
+)
 
-set(SELF_LIBS 
+add_dependencies(monitor
+    common
     video_capture
     video_process
+)
+
+
+target_link_libraries(monitor
     common
-    )
-set(3RDPARTY 
-    easylogger
+    video_capture
+    video_process
+    libmpi.so
+    libive.a 
+    libmd.a 
+    libVoiceEngine.a 
+    libupvqe.a
+    libdnvqe.a 
+    lib_hiae.a 
+    libisp.a 
+    libsns_imx290.so
+    lib_hiae.a
+    lib_hiawb.a 
+    lib_hiaf.a 
+    lib_hidefog.a
+    libeasylogger.a
+    libSDL2_ttf.a
+    libSDL2.a 
+    libfreetype.a
     pthread
     dl
     m
-    )
+)
 
-target_link_libraries(monitor 
-    ${MPP_LIBS} 
-    ${SELF_LIBS} 
-    ${3RDPARTY}
-    )
+
+
+
