@@ -25,10 +25,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE true)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections -D__CMAKE_FILE__='\"$(notdir $(abspath $<))\"'")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections -D__CMAKE_FILE__='\"$(notdir $(abspath $<))\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections -Dhi3516ev100 -DSENSOR_TYPE=SONY_IMX290_MIPI_1080P_30FPS -DHI_RELEASE -DHI_XXXX -DISP_V2 -DHI_ACODEC_TYPE_INNER")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=arm926ej-s -w -mno-unaligned-access -fno-aggressive-loop-optimizations -ffunction-sections -fdata-sections -Dhi3516ev100 -DSENSOR_TYPE=SONY_IMX290_MIPI_1080P_30FPS -DHI_RELEASE -DHI_XXXX -DISP_V2 -DHI_ACODEC_TYPE_INNER")
 
-
+# -D__CMAKE_FILE__='\"$(notdir $(abspath $<))\"'
 include_directories(
     ${PROJECT_BINARY_DIR}/include
     ${PROJECT_SOURCE_DIR}/monitor

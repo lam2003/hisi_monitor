@@ -2,6 +2,108 @@
 #include "base/ref_counted_object.h"
 #include "common/res_code.h"
 
+static combo_dev_attr_t COMBO_DEV_ATTR =
+    {
+        .devno = 0,
+        .input_mode = INPUT_MODE_LVDS,
+        {.lvds_attr =
+             {
+                 .img_size = {1920, 1080},
+                 .raw_data_type = RAW_DATA_12BIT,
+                 .wdr_mode = HI_WDR_MODE_NONE,
+
+                 .sync_mode = LVDS_SYNC_MODE_SAV,
+                 .vsync_type = {LVDS_VSYNC_NORMAL, 0, 0},
+                 .fid_type = {LVDS_FID_NONE, HI_FALSE},
+
+                 .data_endian = LVDS_ENDIAN_BIG,
+                 .sync_code_endian = LVDS_ENDIAN_BIG,
+                 .lane_id = {0, 1, 2, 3},
+
+                 .sync_code =
+                     {
+                         {{0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0}},
+                         {{0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0}},
+                         {{0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0}},
+                         {{0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0},
+                          {0xab0, 0xb60, 0x800, 0x9d0}}}}}};
+
+static ISP_PUB_ATTR_S ISP_PUB_ATTR = {
+
+    .stWndRect = {
+        .s32X = 0,
+        .s32Y = 0,
+        .u32Width = 1920,
+        .u32Height = 1080,
+    },
+    .f32FrameRate = 30,
+    .enBayer = BAYER_GBRG};
+
+static VI_DEV_ATTR_S VI_DEV_ATTR = {
+
+    .enIntfMode = VI_MODE_LVDS,
+
+    .enWorkMode = VI_WORK_MODE_1Multiplex,
+
+    .au32CompMask = {0xFFF00000, 0x0},
+
+    .enScanMode = VI_SCAN_PROGRESSIVE,
+
+    .s32AdChnId = {-1, -1, -1, -1},
+
+    .enDataSeq = VI_INPUT_DATA_YUYV,
+
+    .stSynCfg = {
+        .enVsync = VI_VSYNC_PULSE,
+        .enVsyncNeg = VI_VSYNC_NEG_LOW,
+        .enHsync = VI_HSYNC_VALID_SINGNAL,
+        .enHsyncNeg = VI_HSYNC_NEG_HIGH,
+        .enVsyncValid = VI_VSYNC_VALID_SINGAL,
+        .enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
+
+        .stTimingBlank = {
+            .u32HsyncHfb = 0,
+            .u32HsyncAct = 1280,
+            .u32HsyncHbb = 0,
+
+            .u32VsyncVfb = 0,
+            .u32VsyncVact = 720,
+            .u32VsyncVbb = 0,
+
+            .u32VsyncVbfb = 0,
+            .u32VsyncVbact = 0,
+            .u32VsyncVbbb = 0}},
+
+    .enDataPath = VI_PATH_ISP,
+
+    .enInputDataType = VI_DATA_TYPE_RGB,
+
+    .bDataRev = HI_FALSE,
+
+    .stDevRect = {.s32X = 0, .s32Y = 0, .u32Width = 1920, .u32Height = 1080}};
+
+static VI_CHN_ATTR_S VI_CHN_ATTR = {
+    .stCapRect = {.s32X = 0, .s32Y = 0, .u32Width = 1920, .u32Height = 1080},
+    .stDestSize = {.u32Width = 1920, .u32Height = 1080},
+    .enCapSel = VI_CAPSEL_BOTH,
+    .enPixFormat = PIXEL_FORMAT,
+    .enCompressMode = COMPRESS_MODE_NONE,
+    .bMirror = HI_FALSE,
+    .bFlip = HI_FALSE,
+    .s32SrcFrameRate = -1,
+    .s32DstFrameRate = -1};
+
 namespace nvr
 {
 rtc::scoped_refptr<VideoCaptureModule> VideoCaptureImpl::Create()
@@ -32,13 +134,13 @@ int32_t VideoCaptureImpl::StartMIPI()
     }
 
     //开始配置mipi
-    ioctl(fd, HI_MIPI_RESET_MIPI, &KMipiCfg.devno);
+    ioctl(fd, HI_MIPI_RESET_MIPI, &COMBO_DEV_ATTR.devno);
 
     //开始配置传感器
-    ioctl(fd, HI_MIPI_RESET_SENSOR, &KMipiCfg.devno);
+    ioctl(fd, HI_MIPI_RESET_SENSOR, &COMBO_DEV_ATTR.devno);
 
     //配置mipi
-    if (ioctl(fd, HI_MIPI_SET_DEV_ATTR, &KMipiCfg))
+    if (ioctl(fd, HI_MIPI_SET_DEV_ATTR, &COMBO_DEV_ATTR))
     {
         log_e("configure mipi failed,%s", strerror(errno));
         return static_cast<int>(KMPPError);
@@ -47,10 +149,10 @@ int32_t VideoCaptureImpl::StartMIPI()
     usleep(10000); //10ms
 
     //结束配置mipi
-    ioctl(fd, HI_MIPI_UNRESET_MIPI, &KMipiCfg.devno);
+    ioctl(fd, HI_MIPI_UNRESET_MIPI, &COMBO_DEV_ATTR.devno);
 
     //结束配置传感器
-    ioctl(fd, HI_MIPI_UNRESET_SENSOR, &KMipiCfg.devno);
+    ioctl(fd, HI_MIPI_UNRESET_SENSOR, &COMBO_DEV_ATTR.devno);
 
     ::close(fd);
 
@@ -115,7 +217,7 @@ int32_t VideoCaptureImpl::InitISP()
         return static_cast<int>(KMPPError);
     }
 
-    ret = HI_MPI_ISP_SetPubAttr(NVR_ISP_DEV, &KISPPubAttr);
+    ret = HI_MPI_ISP_SetPubAttr(NVR_ISP_DEV, &ISP_PUB_ATTR);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_ISP_SetPubAttr failed,code %#x", ret);
@@ -134,14 +236,17 @@ int32_t VideoCaptureImpl::InitISP()
 
 void VideoCaptureImpl::StartISP()
 {
-    isp_thread_ = std::unique_ptr<std::thread>(new std::thread([]() {
-        //设置线程名
+    isp_thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
+        int32_t ret;
+
         prctl(PR_SET_NAME, "hisi_isp_thread", 0, 0, 0);
 
-        HI_MPI_ISP_Run(NVR_ISP_DEV);
+        ret = HI_MPI_ISP_Run(NVR_ISP_DEV);
+        if (HI_SUCCESS != ret)
+            log_e("HI_MPI_ISP_Run failed,code %#x", ret);
     }));
 
-    usleep(1000); //10ms
+    usleep(10000); //10ms
 }
 
 int32_t VideoCaptureImpl::StartVI()
@@ -150,6 +255,7 @@ int32_t VideoCaptureImpl::StartVI()
 
     ISP_WDR_MODE_S wdr_mode;
     wdr_mode.enWDRMode = WDR_MODE_NONE;
+
     ret = HI_MPI_ISP_GetWDRMode(NVR_ISP_DEV, &wdr_mode);
     if (HI_SUCCESS != ret)
     {
@@ -157,7 +263,7 @@ int32_t VideoCaptureImpl::StartVI()
         return static_cast<int>(KMPPError);
     }
 
-    ret = HI_MPI_VI_SetDevAttr(NVR_VI_DEV, &KVIDevAttr);
+    ret = HI_MPI_VI_SetDevAttr(NVR_VI_DEV, &VI_DEV_ATTR);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_VI_SetDevAttr failed,code %#x", ret);
@@ -165,6 +271,7 @@ int32_t VideoCaptureImpl::StartVI()
     }
 
     VI_WDR_ATTR_S wdr_attr;
+    memset(&wdr_attr, 0, sizeof(wdr_attr));
     wdr_attr.enWDRMode = wdr_mode.enWDRMode;
     wdr_attr.bCompress = HI_FALSE;
 
@@ -189,7 +296,7 @@ int32_t VideoCaptureImpl::StartVIChn()
 {
     int32_t ret;
 
-    ret = HI_MPI_VI_SetChnAttr(NVR_VI_CHN, &KVIChnAttr);
+    ret = HI_MPI_VI_SetChnAttr(NVR_VI_CHN, &VI_CHN_ATTR);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_VI_SetChnAttr failed,code %#x", ret);
@@ -235,8 +342,6 @@ int32_t VideoCaptureImpl::Initialize()
 
     return static_cast<int>(KSuccess);
 }
-
-
 
 void VideoCaptureImpl::close()
 {

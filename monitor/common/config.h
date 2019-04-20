@@ -28,7 +28,7 @@ struct Config
     };
 
     System system;
-    Video video;
+    Video video; 
     std::mutex mux;
 
     static Config *Instance()

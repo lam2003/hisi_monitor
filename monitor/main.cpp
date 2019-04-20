@@ -26,7 +26,7 @@ int main(int argc, char **argv)
         log_e("error:%s", make_error_code(code).message().c_str());
         return static_cast<int>(code);
     }
-
+ 
     end_time = System::GetSteadyMicroSeconds();
 
     log_i("mpp initialize succeed,cost %lu us", end_time - start_time);
@@ -43,22 +43,20 @@ int main(int argc, char **argv)
 
     log_i("video capture initialize succeed,cost %lu us", end_time - start_time);
 
-    //初始化视频处理模块
+    //初始化视频处理模块 
     log_i("initializing video process...");
 
     start_time = System::GetSteadyMicroSeconds();
-
+ 
     rtc::scoped_refptr<VideoProcessModule> video_process_module = VideoProcessImpl::Create();
-    // NVR_CHECK(NULL != video_process_module)
+    NVR_CHECK(NULL != video_process_module)
 
     end_time = System::GetSteadyMicroSeconds();
+ 
+    log_i("video process succeed,cost %lu us", end_time - start_time);
 
-    log_i("video capture process succeed,cost %lu us", end_time - start_time);
 
-    while (1)
+    while(1)
         sleep(10);
-
-    // OSD::Instance()->Initialize();
-
     return 0;
 }
