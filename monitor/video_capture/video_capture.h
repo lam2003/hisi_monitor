@@ -1,7 +1,6 @@
 #ifndef VIDEO_CAPTRUE_MODULE_H_
 #define VIDEO_CAPTURE_MODULE_H_
 
-#include "video/video_sink_interface.h"
 #include "base/scoped_refptr.h"
 #include "base/ref_count.h"
 

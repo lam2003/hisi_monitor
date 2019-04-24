@@ -1,6 +1,7 @@
 add_subdirectory(common)
 add_subdirectory(video_capture)
 add_subdirectory(video_process)
+add_subdirectory(video_codec)
 
 add_executable(monitor 
     main.cpp
@@ -10,6 +11,7 @@ add_dependencies(monitor
     common
     video_capture
     video_process
+    video_codec
 )
 
 
@@ -41,6 +43,7 @@ target_link_libraries(monitor
     common
     video_capture
     video_process
+    video_codec
 )
 
 

@@ -26,7 +26,7 @@ int32_t System::InitMPP()
         log_e("HI_MPI_VB_SetConf failed,code %#x", ret);
         return static_cast<int>(KMPPError);
     }
- 
+
     ret = HI_MPI_VB_Init();
     if (HI_SUCCESS != ret)
     {
@@ -50,7 +50,7 @@ int32_t System::InitMPP()
     {
         log_e("HI_MPI_SYS_Init failed,code %#x", ret);
         return static_cast<int>(KMPPError);
-    } 
+    }
 
     return static_cast<int>(KSuccess);
 }
@@ -72,19 +72,19 @@ void System::InitLogger()
 int32_t System::CalcPicVbBlkSize(int align)
 {
     int32_t vb_pic_header_size;
-    int32_t align_width = Align(PIC_WIDTH, align); 
+    int32_t align_width = Align(PIC_WIDTH, align);
     int32_t align_height = Align(PIC_HEIGHT, align);
     VB_PIC_HEADER_SIZE(PIC_WIDTH, PIC_HEIGHT, PIXEL_FORMAT, vb_pic_header_size);
     return vb_pic_header_size + ((align_width * align_height) * 3 >> 1);
 }
- 
+
 uint64_t System::GetSteadyMicroSeconds()
 {
     using namespace std::chrono;
     auto now = steady_clock::now();
     auto now_since_epoch = now.time_since_epoch();
     return duration_cast<microseconds>(now_since_epoch).count();
-} 
+}
 
 int32_t System::VIUnBindVPSS()
 {
@@ -123,6 +123,54 @@ int32_t System::VIBindVPSS()
     dest_chn.enModId = HI_ID_VPSS;
     dest_chn.s32DevId = NVR_VPSS_GRP;
     dest_chn.s32ChnId = NVR_VPSS_CHN;
+
+    ret = HI_MPI_SYS_Bind(&src_chn, &dest_chn);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_SYS_Bind failed,code %#x", ret);
+        return static_cast<int>(KMPPError);
+    }
+
+    return static_cast<int>(KSuccess);
+}
+
+int32_t System::VPSSUnBindVENC()
+{
+    int32_t ret;
+
+    MPP_CHN_S src_chn;
+    src_chn.enModId = HI_ID_VPSS;
+    src_chn.s32DevId = NVR_VPSS_GRP;
+    src_chn.s32ChnId = NVR_VPSS_CHN;
+
+    MPP_CHN_S dest_chn;
+    dest_chn.enModId = HI_ID_VENC;
+    dest_chn.s32DevId = 0;
+    dest_chn.s32ChnId = NVR_VENC_CHN;
+
+    ret = HI_MPI_SYS_UnBind(&src_chn, &dest_chn);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_SYS_UnBind failed,code %#x", ret);
+        return static_cast<int>(KMPPError);
+    }
+
+    return static_cast<int>(KSuccess);
+}
+
+int32_t System::VPSSBindVENC()
+{
+    int32_t ret;
+
+    MPP_CHN_S src_chn;
+    src_chn.enModId = HI_ID_VPSS;
+    src_chn.s32DevId = NVR_VPSS_GRP;
+    src_chn.s32ChnId = NVR_VPSS_CHN;
+
+    MPP_CHN_S dest_chn;
+    dest_chn.enModId = HI_ID_VENC;
+    dest_chn.s32DevId = 0;
+    dest_chn.s32ChnId = NVR_VENC_CHN;
 
     ret = HI_MPI_SYS_Bind(&src_chn, &dest_chn);
     if (HI_SUCCESS != ret)

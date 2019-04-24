@@ -8,7 +8,7 @@ struct System
     static int32_t InitMPP();
     static void InitLogger();
 
-    static inline int32_t Align(int num, int align)
+    static inline int32_t Align(int num, int align = ALIGN)
     {
         return (num + align - 1) & ~(align - 1);
     }
@@ -21,9 +21,9 @@ struct System
 
     static int32_t VIUnBindVPSS();
 
-    // static int32_t VPSSBindVENC();
+    static int32_t VPSSBindVENC();
 
-    // static int32_t VPSSUnBindVENC();
+    static int32_t VPSSUnBindVENC();
 };
 } // namespace nvr
 #endif

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <strings.h>
 //system
 #include <unistd.h>
 #include <sys/types.h>
@@ -60,17 +61,21 @@
 
 #define PIC_WIDTH 1920                               //mx290图像宽
 #define PIC_HEIGHT 1080                              //mx290图像长
+#define FRAME_RATE 30                                //mx290源帧率
 #define PIXEL_FORMAT PIXEL_FORMAT_YUV_SEMIPLANAR_420 //使用YUV420P
 #define PIC_SIZE PIC_HD1080                          //1080P采样
 #define ALIGN 64                                     //默认内存对齐大小
 #define VB_POOLS_NUM 128                             //缓冲池数量
 #define VB_MEM_BLK_NUM 5                             //内存块数量
+#define BUFFER_SIZE 1048576                          //缓存大小
+#define USE_ALLOCATOR_NEW_DELETE                     //使用new/delete进行内存操作
 
 #define NVR_ISP_DEV 0  //ISP设备
 #define NVR_VI_DEV 0   //VI设备
 #define NVR_VI_CHN 0   //VI通道
 #define NVR_VPSS_GRP 0 //VPSS组
-#define NVR_VPSS_CHN 0 //VPSS通道
+#define NVR_VPSS_CHN 1 //VPSS通道
+#define NVR_VENC_CHN 0 //VENC通道
 
 // arm-hisiv500-linux-g++不支持
 // template<typename T>

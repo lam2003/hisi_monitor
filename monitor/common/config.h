@@ -1,9 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include <mutex>
 #include <string>
-
+#include "video_codec/video_codec_define.h"
 
 namespace nvr
 {
@@ -24,12 +23,30 @@ struct Config
     {
         Video()
         {
+            frame_rate = 25;
+            width = 1280;
+            height = 720;
+
+            codec_type = H265;
+            codec_mode = CBR;
+            codec_profile = 0;
+            codec_bitrate = 2048; //k
+
         }
+        //common
+        int32_t frame_rate;
+        int32_t width;
+        int32_t height;
+
+        //codec configure
+        VideoCodecType codec_type;
+        VideoCodecMode codec_mode;
+        int32_t codec_profile;
+        int32_t codec_bitrate;
     };
 
     System system;
-    Video video; 
-    std::mutex mux;
+    Video video;
 
     static Config *Instance()
     {

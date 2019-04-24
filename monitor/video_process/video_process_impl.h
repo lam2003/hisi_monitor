@@ -11,19 +11,9 @@ namespace nvr
 class VideoProcessImpl : public VideoProcessModule
 {
 public:
-    static rtc::scoped_refptr<VideoProcessModule> Create();
+    static rtc::scoped_refptr<VideoProcessModule> Create(const Params &params);
 
-    int32_t SetRotate(ROTATE_E rotate) override;
-
-    int32_t SetFrameRate(int frame_rate) override;
-
-    int32_t SetMirror(bool mirror) override;
-
-    int32_t SetFlip(bool flip) override;
-
-    int32_t setScale(const SIZE_S &size) override;
-
-    int32_t Initialize() override;
+    int32_t Initialize(const Params &params) override;
 
     void close() override;
 
@@ -33,9 +23,9 @@ protected:
     ~VideoProcessImpl() override;
 
 private:
-    int32_t StartVPSSGroup();
+    int32_t StartVPSSGroup(const Params &params);
 
-    int32_t StartVPSSChn();
+    int32_t StartVPSSChn(const Params &params);
 
 private:
     int32_t vpss_chn_fd_;

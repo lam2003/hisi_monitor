@@ -8,7 +8,7 @@ static combo_dev_attr_t COMBO_DEV_ATTR =
         .input_mode = INPUT_MODE_LVDS,
         {.lvds_attr =
              {
-                 .img_size = {1920, 1080},
+                 .img_size = {PIC_WIDTH, PIC_HEIGHT},
                  .raw_data_type = RAW_DATA_12BIT,
                  .wdr_mode = HI_WDR_MODE_NONE,
 
@@ -44,10 +44,10 @@ static ISP_PUB_ATTR_S ISP_PUB_ATTR = {
     .stWndRect = {
         .s32X = 0,
         .s32Y = 0,
-        .u32Width = 1920,
-        .u32Height = 1080,
+        .u32Width = PIC_WIDTH,
+        .u32Height = PIC_HEIGHT,
     },
-    .f32FrameRate = 30,
+    .f32FrameRate = FRAME_RATE,
     .enBayer = BAYER_GBRG};
 
 static VI_DEV_ATTR_S VI_DEV_ATTR = {
@@ -91,18 +91,18 @@ static VI_DEV_ATTR_S VI_DEV_ATTR = {
 
     .bDataRev = HI_FALSE,
 
-    .stDevRect = {.s32X = 0, .s32Y = 0, .u32Width = 1920, .u32Height = 1080}};
+    .stDevRect = {.s32X = 0, .s32Y = 0, .u32Width = PIC_WIDTH, .u32Height = PIC_HEIGHT}};
 
 static VI_CHN_ATTR_S VI_CHN_ATTR = {
-    .stCapRect = {.s32X = 0, .s32Y = 0, .u32Width = 1920, .u32Height = 1080},
-    .stDestSize = {.u32Width = 1920, .u32Height = 1080},
+    .stCapRect = {.s32X = 0, .s32Y = 0, .u32Width = PIC_WIDTH, .u32Height = PIC_HEIGHT},
+    .stDestSize = {.u32Width = PIC_WIDTH, .u32Height = PIC_HEIGHT},
     .enCapSel = VI_CAPSEL_BOTH,
     .enPixFormat = PIXEL_FORMAT,
     .enCompressMode = COMPRESS_MODE_NONE,
     .bMirror = HI_FALSE,
     .bFlip = HI_FALSE,
-    .s32SrcFrameRate = -1,
-    .s32DstFrameRate = -1};
+    .s32SrcFrameRate = FRAME_RATE,
+    .s32DstFrameRate = FRAME_RATE};
 
 namespace nvr
 {
