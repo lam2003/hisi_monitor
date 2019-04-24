@@ -28,7 +28,11 @@ class VideoCodecImpl : public VideoCodecModule
   private:
     int32_t StartVENCChn(const Params &params);
 
+    void StopVENCChn();
+
     void StartGetStreamThread(const Params &params);
+
+    void StopGetStreamThread();
 
   private:
     bool run_;

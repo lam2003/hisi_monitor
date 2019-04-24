@@ -28,6 +28,7 @@ VideoProcessImpl::VideoProcessImpl() : init_(false)
 
 VideoProcessImpl::~VideoProcessImpl()
 {
+    Close();
 }
 
 int32_t VideoProcessImpl::StartVPSSGroup(const Params &params)
@@ -62,6 +63,19 @@ int32_t VideoProcessImpl::StartVPSSGroup(const Params &params)
     }
 
     return static_cast<int>(KSuccess);
+}
+
+void VideoProcessImpl::StopVPSSGroup()
+{
+    int32_t ret;
+
+    ret = HI_MPI_VPSS_StopGrp(NVR_VPSS_GRP);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VPSS_StopGrp failed,code %#x", ret);
+
+    ret = HI_MPI_VPSS_DestroyGrp(NVR_VPSS_GRP);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VPSS_DestroyGrp failed,code %#x", ret);
 }
 
 int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
@@ -106,6 +120,15 @@ int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
     return static_cast<int>(KSuccess);
 }
 
+void VideoProcessImpl::StopVPSSChn()
+{
+    int32_t ret;
+
+    ret = HI_MPI_VPSS_DisableChn(NVR_VPSS_GRP, NVR_VPSS_CHN);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VPSS_DisableChn failed,code %#x", ret);
+}
+
 int32_t VideoProcessImpl::Initialize(const Params &params)
 {
     if (init_)
@@ -125,8 +148,16 @@ int32_t VideoProcessImpl::Initialize(const Params &params)
     return static_cast<int>(KSuccess);
 }
 
-void VideoProcessImpl::close()
+void VideoProcessImpl::Close()
 {
+    if (!init_)
+        return;
+
+    StopVPSSChn();
+
+    StopVPSSGroup();
+
+    init_ = false;
 }
 
 }; // namespace nvr

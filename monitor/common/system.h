@@ -6,6 +6,9 @@ namespace nvr
 struct System
 {
     static int32_t InitMPP();
+    
+    static void UnInitMPP();
+    
     static void InitLogger();
 
     static inline int32_t Align(int num, int align = ALIGN)

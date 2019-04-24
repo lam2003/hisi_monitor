@@ -17,8 +17,13 @@ int32_t System::InitMPP()
     vb_cfg.astCommPool[0].u32BlkSize = pic_vb_blk_size;
     vb_cfg.astCommPool[0].u32BlkCnt = VB_MEM_BLK_NUM;
 
-    HI_MPI_SYS_Exit();
-    HI_MPI_VB_Exit();
+    ret = HI_MPI_SYS_Exit();
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_SYS_Exit failed,code %#x", ret);
+
+    ret = HI_MPI_VB_Exit();
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VB_Exit failed,code %#x", ret);
 
     ret = HI_MPI_VB_SetConf(&vb_cfg);
     if (HI_SUCCESS != ret)
@@ -53,6 +58,19 @@ int32_t System::InitMPP()
     }
 
     return static_cast<int>(KSuccess);
+}
+
+void System::UnInitMPP()
+{
+    int32_t ret;
+
+    ret = HI_MPI_SYS_Exit();
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_SYS_Exit failed,code %#x", ret);
+
+    ret = HI_MPI_VB_Exit();
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VB_Exit failed,code %#x", ret);
 }
 
 void System::InitLogger()

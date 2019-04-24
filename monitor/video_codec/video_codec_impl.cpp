@@ -130,6 +130,19 @@ int32_t VideoCodecImpl::StartVENCChn(const Params &params)
     return static_cast<int>(KSuccess);
 }
 
+void VideoCodecImpl::StopVENCChn()
+{
+    int32_t ret;
+
+    ret = HI_MPI_VENC_StopRecvPic(NVR_VENC_CHN);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VENC_StopRecvPic failed,code %#x", ret);
+
+    ret = HI_MPI_VENC_DestroyChn(NVR_VENC_CHN);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VENC_DestroyChn failed,code %#x", ret);
+}
+
 void VideoCodecImpl::StartGetStreamThread(const Params &params)
 {
     run_ = true;
@@ -138,6 +151,8 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
 
         VENC_STREAM_S stream;
         VENC_CHN_STAT_S chn_stat;
+
+        prctl(PR_SET_NAME, "hisi_venc_thread", 0, 0, 0);
 
         int32_t fd = HI_MPI_VENC_GetFd(NVR_VENC_CHN);
         if (fd < 0)
@@ -235,9 +250,16 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
                 }
             }
         }
-
         free(packet_buf);
     }));
+}
+
+void VideoCodecImpl::StopGetStreamThread()
+{
+    run_ = false;
+    thread_->join();
+    thread_.reset();
+    thread_ = nullptr;
 }
 
 int32_t VideoCodecImpl::Initialize(const Params &params)
@@ -264,6 +286,15 @@ void VideoCodecImpl::SetVideoSinkInterface(VideoSinkInterface<VideoFrame> *video
 
 void VideoCodecImpl::Close()
 {
+    if (!init_)
+        return;
+
+    StopGetStreamThread();
+
+    StopVENCChn();
+
+    video_sink_ = nullptr;
+    init_ = false;
 }
 
 VideoCodecImpl::VideoCodecImpl() : run_(false),
@@ -275,6 +306,7 @@ VideoCodecImpl::VideoCodecImpl() : run_(false),
 
 VideoCodecImpl::~VideoCodecImpl()
 {
+    Close();
 }
 
 }; // namespace nvr

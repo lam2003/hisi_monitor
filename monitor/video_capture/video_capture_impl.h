@@ -16,7 +16,7 @@ public:
 
     int32_t Initialize() override;
 
-    void close() override;
+    void Close() override;
 
 protected:
     ~VideoCaptureImpl() override;
@@ -28,16 +28,22 @@ private:
 
     int32_t InitISP();
 
+    void UnInitISP();
+
     void StartISP();
+
+    void StopISP();
 
     int32_t StartVI();
 
+    void StopVI();
+
     int32_t StartVIChn();
 
+    void StopVIChn();
+
 private:
-    std::mutex mux_;
-    int32_t vi_chn_fd_;
-    std::unique_ptr<std::thread> isp_thread_;
+    std::unique_ptr<std::thread> thread_;
     bool init_;
 };
 } // namespace nvr

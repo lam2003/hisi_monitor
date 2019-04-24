@@ -15,7 +15,7 @@ public:
 
     int32_t Initialize(const Params &params) override;
 
-    void close() override;
+    void Close() override;
 
 protected:
     VideoProcessImpl();
@@ -25,10 +25,13 @@ protected:
 private:
     int32_t StartVPSSGroup(const Params &params);
 
+    void StopVPSSGroup();
+
     int32_t StartVPSSChn(const Params &params);
 
+    void StopVPSSChn();
+
 private:
-    int32_t vpss_chn_fd_;
     bool init_;
 };
 } // namespace nvr

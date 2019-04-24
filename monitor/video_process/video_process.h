@@ -17,7 +17,7 @@ public:
 
     virtual int32_t Initialize(const Params &params) = 0;
 
-    virtual void close() = 0;
+    virtual void Close() = 0;
 
 protected:
     ~VideoProcessModule() override{};

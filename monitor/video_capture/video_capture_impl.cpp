@@ -234,9 +234,39 @@ int32_t VideoCaptureImpl::InitISP()
     return static_cast<int>(KSuccess);
 };
 
+void VideoCaptureImpl::UnInitISP()
+{
+    int32_t ret;
+
+    ALG_LIB_S alg_lib;
+    memset(&alg_lib, 0, sizeof(alg_lib));
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AF_LIB_NAME, 20);
+    ret = HI_MPI_AF_UnRegister(NVR_ISP_DEV, &alg_lib);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_AF_UnRegister failed,code %#x", ret);
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AWB_LIB_NAME, 20);
+    ret = HI_MPI_AWB_UnRegister(NVR_ISP_DEV, &alg_lib);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_AWB_UnRegister failed,code %#x", ret);
+
+    alg_lib.s32Id = 0;
+    strncpy(alg_lib.acLibName, HI_AE_LIB_NAME, 20);
+    ret = HI_MPI_AE_UnRegister(NVR_ISP_DEV, &alg_lib);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_AE_UnRegister failed,code %#x", ret);
+
+    ret = sensor_unregister_callback();
+    if (HI_SUCCESS != ret)
+        log_e("sensor_unregister_callback failed,code %#x", ret);
+}
+
 void VideoCaptureImpl::StartISP()
 {
-    isp_thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
+    thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
         int32_t ret;
 
         prctl(PR_SET_NAME, "hisi_isp_thread", 0, 0, 0);
@@ -247,6 +277,19 @@ void VideoCaptureImpl::StartISP()
     }));
 
     usleep(10000); //10ms
+}
+
+void VideoCaptureImpl::StopISP()
+{
+    int32_t ret;
+
+    ret = HI_MPI_ISP_Exit(NVR_ISP_DEV);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_ISP_Exit failed,code %#x", ret);
+
+    thread_->join();
+    thread_.reset();
+    thread_ = nullptr;
 }
 
 int32_t VideoCaptureImpl::StartVI()
@@ -292,6 +335,15 @@ int32_t VideoCaptureImpl::StartVI()
     return static_cast<int>(KSuccess);
 };
 
+void VideoCaptureImpl::StopVI()
+{
+    int32_t ret;
+
+    ret = HI_MPI_VI_DisableDev(NVR_VI_DEV);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VI_DisableDev failed,code %#x", ret);
+};
+
 int32_t VideoCaptureImpl::StartVIChn()
 {
     int32_t ret;
@@ -312,6 +364,15 @@ int32_t VideoCaptureImpl::StartVIChn()
 
     return static_cast<int>(KSuccess);
 };
+
+void VideoCaptureImpl::StopVIChn()
+{
+    int32_t ret;
+
+    ret = HI_MPI_VI_DisableChn(NVR_VI_CHN);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VI_DisableChn failed,code %#x", ret);
+}
 
 int32_t VideoCaptureImpl::Initialize()
 {
@@ -343,18 +404,29 @@ int32_t VideoCaptureImpl::Initialize()
     return static_cast<int>(KSuccess);
 }
 
-void VideoCaptureImpl::close()
+void VideoCaptureImpl::Close()
 {
+    if (!init_)
+        return;
+
+    StopVIChn();
+
+    StopVI();
+
+    StopISP();
+
+    UnInitISP();
+
+    init_ = false;
 }
 
-VideoCaptureImpl::VideoCaptureImpl() : vi_chn_fd_(-1),
-                                       isp_thread_(nullptr),
+VideoCaptureImpl::VideoCaptureImpl() : thread_(nullptr),
                                        init_(false)
 {
 }
 
 VideoCaptureImpl::~VideoCaptureImpl()
 {
-    close();
+    Close();
 }
 }; // namespace nvr

@@ -13,7 +13,7 @@ public:
 
     virtual int32_t Initialize() = 0;
 
-    virtual void close() = 0;
+    virtual void Close() = 0;
 
 protected:
     ~VideoCaptureModule() override {}

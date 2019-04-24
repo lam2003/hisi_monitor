@@ -62,7 +62,21 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
-    while (1)
-        sleep(10);
+    log_i("unbinding video process and video encode...");
+    System::VPSSUnBindVENC();
+
+    log_i("unbinding video capture and video process...");
+    System::VIUnBindVPSS();
+
+    log_i("closing video encode...");
+    video_codec_module->Close();
+    log_i("closing video process...");
+    video_process_module->Close();
+    log_i("closing video capture...");
+    video_capture_module->Close();
+ 
+    log_i("UnInitializing mpp...");
+    System::UnInitMPP();
+
     return 0;
 }
