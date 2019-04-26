@@ -6,8 +6,8 @@ namespace nvr
 {
 
 RTMPStreamer::RTMPStreamer() : fmt_ctx_(nullptr),
-                               video_frame_index_(0),
-                               video_duration_(0),
+                               frame_index_(0),
+                               duration_(0),
                                init_(false)
 {
 }
@@ -63,11 +63,11 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
     stream->codecpar->codec_tag = 0;
     stream->codecpar->width = width;
     stream->codecpar->height = height;
-    stream->codecpar->extradata = (uint8_t *)av_malloc(AV_INPUT_BUFFER_PADDING_SIZE + sps_len + pps_len);
-    stream->codecpar->extradata_size = sps_len + pps_len;
-    memset(stream->codecpar->extradata, 0, AV_INPUT_BUFFER_PADDING_SIZE + sps_len + pps_len);
-    memcpy(stream->codecpar->extradata, sps, sps_len);
-    memcpy(stream->codecpar->extradata + sps_len, pps, pps_len);
+    stream->codecpar->extradata = (uint8_t *)av_malloc(AV_INPUT_BUFFER_PADDING_SIZE + sps.length() + pps.length());
+    stream->codecpar->extradata_size = sps.length() + pps.length();
+    memset(stream->codecpar->extradata, 0, AV_INPUT_BUFFER_PADDING_SIZE + sps.length() + pps.length());
+    memcpy(stream->codecpar->extradata, sps.c_str(), sps.length());
+    memcpy(stream->codecpar->extradata + sps.length(), pps.c_str(), pps.length());
     if (fmt_ctx_->oformat->flags & AVFMT_GLOBALHEADER)
         stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
@@ -89,8 +89,8 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
         return static_cast<int>(KThirdPartyError);
     }
 
-    video_duration_ = (double)AV_TIME_BASE / (double)frame_rate;
-    video_duration_ /= (double)(av_q2d(stream->time_base) * AV_TIME_BASE);
+    duration_ = (double)AV_TIME_BASE / (double)frame_rate;
+    duration_ /= (double)(av_q2d(stream->time_base) * AV_TIME_BASE);
 
     init_ = true;
 
@@ -106,9 +106,9 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
     av_init_packet(&pkt);
     pkt.data = frame.data;
     pkt.size = frame.len;
-    pkt.pts = video_duration_ * video_frame_index_++;
+    pkt.pts = duration_ * frame_index_++;
     pkt.dts = pkt.pts;
-    pkt.duration = video_duration_;
+    pkt.duration = duration_;
     av_interleaved_write_frame(fmt_ctx_, &pkt);
 
     return static_cast<int32_t>(KSuccess);
@@ -120,11 +120,12 @@ void RTMPStreamer::Close()
         return;
 
     av_write_trailer(fmt_ctx_);
+    //free extradata
+    avcodec_parameters_free(&fmt_ctx_->streams[0]->codecpar);
     avformat_free_context(fmt_ctx_);
     fmt_ctx_ = nullptr;
-    video_frame_index_ = 0;
-    video_duration_ = 0;
-
+    frame_index_ = 0;
+    duration_ = 0;
     init_ = false;
 }
 }; // namespace nvr

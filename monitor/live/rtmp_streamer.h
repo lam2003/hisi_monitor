@@ -32,8 +32,8 @@ public:
 
 private:
     AVFormatContext *fmt_ctx_;
-    uint64_t video_frame_index_;
-    uint64_t video_duration_;
+    uint64_t frame_index_;
+    uint64_t duration_;
     bool init_;
 };
 }; // namespace nvr
