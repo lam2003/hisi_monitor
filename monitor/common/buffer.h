@@ -33,7 +33,7 @@ public:
         end_pos_ = 0;
     }
 
-    inline bool append(uint8_t *data, uint32_t len)
+    inline bool Append(uint8_t *data, uint32_t len)
     {
         if (FreeSpace() < len)
             return false;
@@ -50,7 +50,7 @@ public:
         return true;
     }
 
-    inline bool get(uint8_t *buf, uint32_t size)
+    inline bool Get(uint8_t *buf, uint32_t size)
     {
         if (Size() < size)
             return false;
@@ -67,6 +67,25 @@ public:
     inline uint32_t FreeSpace() const
     {
         return allocator::requested_size - Size();
+    }
+
+    inline uint8_t *GetCurrentPos()
+    {
+        return data_ + start_pos_;
+    }
+
+    inline bool Consume(uint32_t size)
+    {
+        if (Size() < size)
+            return false;
+        start_pos_ += size;
+        return true;
+    }
+
+    inline void Clear()
+    {
+        start_pos_ = 0;
+        end_pos_ = 0;
     }
 
     virtual ~Buffer()

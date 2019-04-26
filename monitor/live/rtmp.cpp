@@ -1,6 +1,7 @@
 #include "live/rtmp.h"
 #include "common/res_code.h"
 #include "base/ref_counted_object.h"
+#include "live/rtmp_streamer.h"
 
 #define IO_BUFFER_SIZE (32 * 1024)
 
@@ -24,24 +25,6 @@ rtc::scoped_refptr<LiveModule> RtmpLiveImpl::Create(const Params &params)
     return implemention;
 }
 
-int32_t RtmpLiveImpl::ReadBuffer(void *opaque, uint8_t *buf, int requested_len)
-{
-    RtmpLiveImpl *rtmp_live_impl = static_cast<RtmpLiveImpl *>(opaque);
-
-    bool ret;
-    do
-    {
-        std::unique_lock<std::mutex> lock(rtmp_live_impl->mux_);
-        if (ret = rtmp_live_impl->buffer_.get(buf, requested_len))
-            rtmp_live_impl->cond_.wait(lock);
-    } while (rtmp_live_impl->run_ && !ret);
-
-    if (!rtmp_live_impl->run_)
-        return 0;
-
-    return requested_len;
-}
-
 int32_t RtmpLiveImpl::Initialize(const Params &params)
 {
     if (init_)
@@ -51,187 +34,108 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
 
     run_ = true;
     thread_ = std::unique_ptr<std::thread>(new std::thread([this, params]() {
-        int32_t ret;
+        err_code code;
+        RTMPStreamer rtmp_streamer;
+        H264Frame frame;
+        std::string sps, pps;
+        uint8_t *buf;
 
-        av_register_all();
-
-        avformat_network_init();
-
-        AVFormatContext *ifmt_ctx;
-        ifmt_ctx = avformat_alloc_context();
-        if (!ifmt_ctx)
-        {
-            log_e("avformat_alloc_context failed");
-            return;
-        }
-
-        uint8_t *in_buffer = (uint8_t *)av_malloc(IO_BUFFER_SIZE);
-        if (!in_buffer)
-        {
-            log_e("malloc io buffer failed");
-            return;
-        }
-
-        AVIOContext *iavio_ctx = avio_alloc_context(in_buffer, IO_BUFFER_SIZE, 0, this, RtmpLiveImpl::ReadBuffer, nullptr, nullptr);
-        if (!iavio_ctx)
-        {
-            log_e("avio_alloc_context failed");
-            return;
-        }
-
-        ifmt_ctx->pb = iavio_ctx;
-        ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;
-
-        ret = avformat_open_input(&ifmt_ctx, NULL, NULL, NULL);
-        if (ret != 0)
-        {
-            log_e("avformat_open_input failed,code %#x", ret);
-            return;
-        }
-
-        av_dump_format(ifmt_ctx, 0, "memory", 0);
-
-        AVFormatContext *ofmt_ctx;
-        ofmt_ctx = avformat_alloc_context();
-        if (!ofmt_ctx)
-        {
-            log_e("avformat_alloc_context failed");
-            return;
-        }
-        memcpy(ofmt_ctx->filename, params.url.c_str(), params.url.length());
-
-        ofmt_ctx->oformat = av_guess_format("flv", params.url.c_str(), nullptr);
-
-        AVStream *out_stream = avformat_new_stream(ofmt_ctx, ifmt_ctx->streams[0]->codec->codec);
-        if (!out_stream)
-        {
-            log_e("avformat_new_stream failed");
-            return;
-        }
-
-        ret = avcodec_parameters_copy(out_stream->codecpar, ifmt_ctx->streams[0]->codecpar);
-        if (ret != 0)
-        {
-            log_e("avcodec_parameters_copy failed");
-            return;
-        }
-
-        out_stream->codecpar->width = params.width;
-        out_stream->codecpar->height = params.height;
-        out_stream->codecpar->extradata = (uint8_t *)av_malloc(AV_INPUT_BUFFER_PADDING_SIZE + (sps_len_ + pps_len_));
-        memset(out_stream->codecpar->extradata, 0, AV_INPUT_BUFFER_PADDING_SIZE + (sps_len_ + pps_len_));
-        memcpy(out_stream->codecpar->extradata, sps_, sps_len_);
-        memcpy(out_stream->codecpar->extradata + sps_len_, pps_, pps_len_);
-        out_stream->codecpar->extradata_size = sps_len_ + pps_len_;
-
-        out_stream->codecpar->codec_tag = 0;
-        if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            out_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
-        av_dump_format(ofmt_ctx, 0, params.url.c_str(), 1);
-
-        ret = avio_open(&ofmt_ctx->pb, params.url.c_str(), AVIO_FLAG_WRITE);
-        if (ret != 0)
-        {
-            log_e("avio_open failed");
-            return;
-        }
-
-        ret = avformat_write_header(ofmt_ctx, 0);
-        if (ret != 0)
-        {
-            log_e("avformat_write_header failed");
-            return;
-        }
-
-        uint64_t duration = (double)AV_TIME_BASE / (double)params.frame_rate;
-        AVRational time_base = ofmt_ctx->streams[0]->time_base;
-        duration = (double)duration / (double)(av_q2d(time_base) * AV_TIME_BASE);
-        uint64_t frame_index = 0;
+        bool streamer_init = false;
+        buf = (uint8_t *)malloc(512 * 1024);
 
         while (run_)
         {
-            AVPacket pkt;
-            ret = av_read_frame(ifmt_ctx, &pkt);
-            if (ret == AVERROR_EOF)
-            {
-                log_w("av_read_frame got eof...");
-                break;
-            }
-            
-            pkt.pts = duration * frame_index;
-            pkt.dts = pkt.pts;
-            pkt.duration = duration;
-            frame_index++;
+            std::unique_lock<std::mutex> lock(mux_);
 
-            ret = av_interleaved_write_frame(ofmt_ctx, &pkt);
-            if (ret != 0)
+            while (!buffer_.Get((uint8_t *)&frame, sizeof(frame)))
             {
-                log_e("av_interleaved_write_frame failed,code %#x", ret);
-                break;
+                cond_.wait(lock);
+                if (!run_)
+                    break;
             }
+
+            frame.data = buffer_.GetCurrentPos();
+
+            if (!streamer_init && (frame.type == (int)H264Frame::NaluType::SPS || frame.type == (int)H264Frame::NaluType::PPS))
+            {
+                if (frame.type == (int)H264Frame::NaluType::SPS)
+                    sps = std::string((char *)frame.data, frame.len);
+                else if (frame.type == (int)H264Frame::NaluType::PPS)
+                    pps = std::string((char *)frame.data, frame.len);
+
+                if (!sps.empty() && !pps.empty())
+                {
+                    code = static_cast<err_code>(rtmp_streamer.Initialize(params.url, params.width, params.height, params.frame_rate, sps, pps));
+                    if (KSuccess != code)
+                    {
+                        log_e("error:%s", make_error_code(code).message().c_str());
+                        return;
+                    }
+
+                    streamer_init = true;
+                }
+            }
+
+            if (streamer_init)
+            {
+                code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
+                if (KSuccess != code)
+                {
+                    rtmp_streamer.Close();
+                    buffer_.Clear();
+                    sps.clear();
+                    pps.clear();
+                    streamer_init = false;
+                    log_w("rtmp connection break,try to reconnect...");
+                }
+            }
+            buffer_.Consume(frame.len);
         }
-
-        av_write_trailer(ofmt_ctx);
-
-        avio_close(ofmt_ctx->pb);
-
-        avformat_free_context(ofmt_ctx);
-
-        avformat_close_input(&ifmt_ctx);
-
-        av_free(in_buffer);
     }));
 
+    init_ = true;
     return static_cast<int>(KSuccess);
 }
 
 void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
 {
+    if (!init_)
+        return;
+
     NVR_CHECK(frame.GetCodecType() == H264);
 
-    if (/* !got_sps_pps_ && */ H264Frame::NaluType::SPS == static_cast<H264Frame::NaluType>(frame.type))
-    {
-        // log_w("waiting sps/pps");
-        // return;
-        memcpy(sps_, frame.data, frame.len);
-        sps_len_ = frame.len;
-    }
-
-    if (/* !got_sps_pps_ && */ H264Frame::NaluType::PPS == static_cast<H264Frame::NaluType>(frame.type))
-    {
-        // log_w("waiting sps/pps");
-        // return;
-        memcpy(pps_, frame.data, frame.len);
-        pps_len_ = frame.len;
-    }
-
-    // if (!got_sps_pps_)
-    //     got_sps_pps_ = true;
-
     std::unique_lock<std::mutex>(mux_);
-    if (!buffer_.append((uint8_t *)frame.data, frame.len))
-    {
-        log_w("buffer overflow");
+
+    if (buffer_.FreeSpace() < sizeof(frame) + frame.len)
         return;
-    }
+
+    buffer_.Append((uint8_t *)&frame, sizeof(frame));
+    buffer_.Append(frame.data, frame.len);
     cond_.notify_one();
 }
 
 void RtmpLiveImpl::Close()
 {
+    if (!init_)
+        return;
+
     run_ = false;
+    cond_.notify_all();
+    thread_->join();
+    thread_.reset();
+    thread_ = nullptr;
+
+    init_ = false;
 }
 
 RtmpLiveImpl::RtmpLiveImpl() : run_(false),
-                               got_sps_pps_(false),
-                               sps_len_(0),
-                               pps_len_(0),
+                               thread_(nullptr),
                                init_(false)
 {
 }
 
 RtmpLiveImpl::~RtmpLiveImpl()
 {
+    Close();
 }
 }; // namespace nvr

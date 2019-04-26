@@ -14,6 +14,7 @@ RTMPStreamer::RTMPStreamer() : fmt_ctx_(nullptr),
 
 RTMPStreamer::~RTMPStreamer()
 {
+    Close();
 }
 
 int32_t RTMPStreamer::Initialize(const std::string &url,
@@ -71,6 +72,7 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
     if (fmt_ctx_->oformat->flags & AVFMT_GLOBALHEADER)
         stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
+    stream->codec->gop_size = frame_rate;
     fmt_ctx_->streams[0] = stream;
 
     av_dump_format(fmt_ctx_, 0, url.c_str(), 1);
@@ -82,7 +84,7 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
         return static_cast<int>(KThirdPartyError);
     }
 
-    ret = avformat_write_header(fmt_ctx_, 0);
+    ret = avformat_write_header(fmt_ctx_, nullptr);
     if (ret != 0)
     {
         log_e("avformat_write_header failed");
@@ -94,7 +96,7 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
 
     init_ = true;
 
-    return static_cast<int32_t>(KSuccess);
+    return static_cast<int>(KSuccess);
 }
 
 int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
@@ -102,16 +104,31 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
     if (!init_)
         return static_cast<int>(KUnInitialize);
 
+    if (frame.type == H264Frame::NaluType::SPS ||
+        frame.type == H264Frame::NaluType::PPS ||
+        frame.type == H264Frame::NaluType::SEI)
+        return static_cast<int>(KSuccess);
+
+    int32_t ret;
     AVPacket pkt;
     av_init_packet(&pkt);
+
+    pkt.flags = (frame.type == H264Frame::NaluType::ISLICE ? AV_PKT_FLAG_KEY :0);
     pkt.data = frame.data;
     pkt.size = frame.len;
     pkt.pts = duration_ * frame_index_++;
     pkt.dts = pkt.pts;
     pkt.duration = duration_;
-    av_interleaved_write_frame(fmt_ctx_, &pkt);
+    pkt.pos = -1;
 
-    return static_cast<int32_t>(KSuccess);
+    ret = av_interleaved_write_frame(fmt_ctx_, &pkt);
+    if (ret != 0)
+    {
+        log_e("av_interleaved_write_frame failed,code %d", ret);
+        return static_cast<int>(KThirdPartyError);
+    }
+
+    return static_cast<int>(KSuccess);
 }
 
 void RTMPStreamer::Close()
@@ -119,9 +136,8 @@ void RTMPStreamer::Close()
     if (!init_)
         return;
 
-    av_write_trailer(fmt_ctx_);
-    //free extradata
     avcodec_parameters_free(&fmt_ctx_->streams[0]->codecpar);
+    avio_close(fmt_ctx_->pb);
     avformat_free_context(fmt_ctx_);
     fmt_ctx_ = nullptr;
     frame_index_ = 0;

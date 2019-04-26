@@ -23,7 +23,7 @@ struct Config
     {
         Video()
         {
-            frame_rate = 25;
+            frame_rate = 30;
             width = 1280;
             height = 720;
 

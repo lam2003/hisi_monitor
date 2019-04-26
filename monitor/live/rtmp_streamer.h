@@ -10,8 +10,6 @@ extern "C"
 
 namespace nvr
 {
-//only support h264
-
 class RTMPStreamer : public Streamer
 {
 public:

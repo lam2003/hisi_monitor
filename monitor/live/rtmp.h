@@ -16,6 +16,7 @@ extern "C"
 
 namespace nvr
 {
+//only support h264
 class RtmpLiveImpl : public LiveModule
 {
 public:
@@ -38,13 +39,8 @@ private:
     Buffer<> buffer_;
     std::mutex mux_;
     std::condition_variable cond_;
-    std::unique_ptr<std::thread> thread_;
     bool run_;
-    bool got_sps_pps_;
-    uint8_t sps_[64];
-    uint32_t sps_len_;
-    uint8_t pps_[64];
-    uint32_t pps_len_;
+    std::unique_ptr<std::thread> thread_;
     bool init_;
 };
 } // namespace nvr
