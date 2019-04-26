@@ -27,7 +27,7 @@ struct Config
             width = 1280;
             height = 720;
 
-            codec_type = H265;
+            codec_type = H264;
             codec_mode = CBR;
             codec_profile = 0;
             codec_bitrate = 2048; //k

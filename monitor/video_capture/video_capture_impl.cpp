@@ -268,9 +268,6 @@ void VideoCaptureImpl::StartISP()
 {
     thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
         int32_t ret;
-
-        prctl(PR_SET_NAME, "hisi_isp_thread", 0, 0, 0);
-
         ret = HI_MPI_ISP_Run(NVR_ISP_DEV);
         if (HI_SUCCESS != ret)
             log_e("HI_MPI_ISP_Run failed,code %#x", ret);

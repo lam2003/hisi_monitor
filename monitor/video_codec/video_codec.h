@@ -11,26 +11,26 @@ namespace nvr
 
 class VideoCodecModule : public rtc::RefCountInterface
 {
-  public:
-    struct Params
-    {
-        int32_t frame_rate;
-        int32_t width;
-        int32_t height;
-        VideoCodecType type;
-        VideoCodecMode mode;
-        int32_t profile;
-        int32_t bitrate;
-    };
+public:
+  struct Params
+  {
+    int32_t frame_rate;
+    int32_t width;
+    int32_t height;
+    VideoCodecType codec_type;
+    VideoCodecMode codec_mode;
+    int32_t profile;
+    int32_t bitrate;
+  };
 
-    virtual int32_t Initialize(const Params &params) = 0;
+  virtual int32_t Initialize(const Params &params) = 0;
 
-    virtual void Close() = 0;
+  virtual void Close() = 0;
 
-    virtual void SetVideoSinkInterface(VideoSinkInterface<VideoFrame> *video_sink) = 0;
+  virtual void AddVideoSink(VideoSinkInterface<VideoFrame> *video_sink) = 0;
 
-  protected:
-    ~VideoCodecModule() override{};
+protected:
+  ~VideoCodecModule() override {}
 };
 }; // namespace nvr
 

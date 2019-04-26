@@ -2,6 +2,7 @@ add_subdirectory(common)
 add_subdirectory(video_capture)
 add_subdirectory(video_process)
 add_subdirectory(video_codec)
+add_subdirectory(live)
 
 add_executable(monitor 
     main.cpp
@@ -39,11 +40,18 @@ target_link_libraries(monitor
     libSDL2_ttf.a
     libSDL2.a 
     libfreetype.a
+    libavformat.a
+    libavdevice.a
+    libavcodec.a
+    libavutil.a
+    libavresample.a
+
     #self
     common
     video_capture
     video_process
     video_codec
+    live
 )
 
 

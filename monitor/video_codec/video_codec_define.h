@@ -19,9 +19,27 @@ enum VideoCodecMode
     AVBR
 };
 
-class H265Frame : public VideoFrame
+struct H264Frame : public VideoFrame
 {
-  public:
+    enum NaluType
+    {
+        PSLICE = 1,
+        ISLICE = 5,
+        SEI = 6,
+        SPS = 7,
+        PPS = 8,
+    };
+
+    ~H264Frame() override {}
+
+    int32_t GetCodecType() const override
+    {
+        return static_cast<int>(H264);
+    }
+};
+
+struct H265Frame : public VideoFrame
+{
     enum NaluType
     {
         BSLICE = 0,
@@ -33,13 +51,13 @@ class H265Frame : public VideoFrame
         PPS = 34,
         SEI = 39
     };
-    
-    NaluType type;
-    uint8_t *data;
-    uint32_t len;
-    uint64_t ts;
 
     ~H265Frame() override {}
+
+    int32_t GetCodecType() const override
+    {
+        return static_cast<int>(H265);
+    }
 };
 
 }; // namespace nvr

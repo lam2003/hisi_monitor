@@ -4,17 +4,17 @@
 #include "video_capture/video_capture_impl.h"
 #include "video_process/video_process_impl.h"
 #include "video_codec/video_codec_impl.h"
-
-#include "video_process/osd.h"
+#include "live/rtmp.h"
 
 using namespace nvr;
 
-#define CHACK_ERROR(a)                                           \
-    if (KSuccess != a)                                           \
-    {                                                            \
-        log_e("error:%s", make_error_code(a).message().c_str()); \
-        return static_cast<int>(a);                              \
-    }
+static bool KRun = true;
+
+void signal_handler(int signo)
+{
+    log_w("recevice SIGINT,quit process");
+    KRun = false;
+}
 
 int main(int argc, char **argv)
 {
@@ -23,6 +23,9 @@ int main(int argc, char **argv)
 
     //初始化日志系统
     System::InitLogger();
+
+    //初始化信号处理函数
+    signal(SIGINT, signal_handler);
 
     //初始化海思sdk
     log_i("initializing mpp...");
@@ -48,7 +51,7 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VIBindVPSS());
     CHACK_ERROR(code)
 
-    log_i("initializeing video encode...");
+    log_i("initializing video encode...");
     rtc::scoped_refptr<VideoCodecModule> video_codec_module = VideoCodecImpl::Create({Config::Instance()->video.frame_rate,
                                                                                       Config::Instance()->video.width,
                                                                                       Config::Instance()->video.height,
@@ -62,20 +65,35 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
+    log_i("initializing live...");
+    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
+                                                                       Config::Instance()->video.width,
+                                                                       Config::Instance()->video.height,
+                                                                       Config::Instance()->video.codec_type,
+                                                                       "rtmp://192.168.22.222/live/9"});
+    NVR_CHECK(NULL != live_module);
+
+    video_codec_module->AddVideoSink(live_module);
+
+    while (KRun)
+        sleep(1000);
+
     log_i("unbinding video process and video encode...");
     System::VPSSUnBindVENC();
+
+    log_i("closing video encode...");
+    video_codec_module->Close();
 
     log_i("unbinding video capture and video process...");
     System::VIUnBindVPSS();
 
-    log_i("closing video encode...");
-    video_codec_module->Close();
     log_i("closing video process...");
     video_process_module->Close();
+
     log_i("closing video capture...");
     video_capture_module->Close();
- 
-    log_i("UnInitializing mpp...");
+
+    log_i("closing mpp...");
     System::UnInitMPP();
 
     return 0;

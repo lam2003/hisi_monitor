@@ -14,10 +14,10 @@
 #include <sys/prctl.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <signal.h>
 //logger
 #include <elog.h>
 //hisi sdk
-
 #include <hi_common.h>
 #include <hi_comm_sys.h>
 #include <hi_comm_vb.h>
@@ -59,6 +59,13 @@
         exit(-1);                                     \
     }
 
+#define CHACK_ERROR(a)                                           \
+    if (KSuccess != a)                                           \
+    {                                                            \
+        log_e("error:%s", make_error_code(a).message().c_str()); \
+        return static_cast<int>(a);                              \
+    }
+
 #define PIC_WIDTH 1920                               //mx290图像宽
 #define PIC_HEIGHT 1080                              //mx290图像长
 #define FRAME_RATE 30                                //mx290源帧率
@@ -67,8 +74,7 @@
 #define ALIGN 64                                     //默认内存对齐大小
 #define VB_POOLS_NUM 128                             //缓冲池数量
 #define VB_MEM_BLK_NUM 5                             //内存块数量
-#define BUFFER_SIZE 1048576                          //缓存大小
-#define USE_ALLOCATOR_NEW_DELETE                     //使用new/delete进行内存操作
+#define BUFFER_SIZE 262144                           //缓存大小
 
 #define NVR_ISP_DEV 0  //ISP设备
 #define NVR_VI_DEV 0   //VI设备

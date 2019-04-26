@@ -1,3 +1,6 @@
+#ifndef VIDEO_SINK_INTERFACE_H_
+#define VIDEO_SINK_INTERFACE_H_
+
 namespace nvr
 {
 
@@ -11,3 +14,5 @@ class VideoSinkInterface
 };
 
 } // namespace nvr
+
+#endif 

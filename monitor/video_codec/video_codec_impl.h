@@ -5,40 +5,41 @@
 
 #include <memory>
 #include <thread>
+#include <vector>
 
 namespace nvr
 {
 
 class VideoCodecImpl : public VideoCodecModule
 {
-  public:
-    static rtc::scoped_refptr<VideoCodecModule> Create(const Params &params);
+public:
+  static rtc::scoped_refptr<VideoCodecModule> Create(const Params &params);
 
-    int32_t Initialize(const Params &params) override;
+  int32_t Initialize(const Params &params) override;
 
-    void Close() override;
+  void Close() override;
 
-    void SetVideoSinkInterface(VideoSinkInterface<VideoFrame> *video_sink) override;
+  void AddVideoSink(VideoSinkInterface<VideoFrame> *video_sink) override;
 
-  protected:
-    VideoCodecImpl();
+protected:
+  VideoCodecImpl();
 
-    ~VideoCodecImpl() override;
+  ~VideoCodecImpl() override;
 
-  private:
-    int32_t StartVENCChn(const Params &params);
+private:
+  int32_t StartVENCChn(const Params &params);
 
-    void StopVENCChn();
+  void StopVENCChn();
 
-    void StartGetStreamThread(const Params &params);
+  void StartGetStreamThread(const Params &params);
 
-    void StopGetStreamThread();
+  void StopGetStreamThread();
 
-  private:
-    bool run_;
-    std::unique_ptr<std::thread> thread_;
-    VideoSinkInterface<VideoFrame> *video_sink_;
-    bool init_;
+private:
+  bool run_;
+  std::unique_ptr<std::thread> thread_;
+  std::vector<VideoSinkInterface<VideoFrame> *> video_sinks_;
+  bool init_;
 };
 }; // namespace nvr
 

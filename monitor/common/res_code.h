@@ -9,8 +9,8 @@ enum err_code
     KDupInitialize = 0x1,
     KMPPError = 0x3,
     KVIChnError = 0x4,
-    KUnInitialize = 0x5,
-    KThirdPartyError = 0x6,
+    KThirdPartyError = 0x5,
+    KUnInitialize = 0x6
 };
 
 class NVRErrorCategory : public std::error_category
@@ -29,10 +29,10 @@ class NVRErrorCategory : public std::error_category
             return "duplicate initialize";
         case err_code::KMPPError:
             return "hisi mpp error";
-        case err_code::KUnInitialize:
-            return "uninitialize";
         case err_code::KThirdPartyError:
             return "thirdparty library error";
+        case err_code::KUnInitialize:
+            return "not initialize";
         default:
             return "unknow";
         }
