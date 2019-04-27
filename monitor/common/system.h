@@ -11,6 +11,8 @@ struct System
     
     static void InitLogger();
 
+    static void InitFFMPEG();
+    
     static inline int32_t Align(int num, int align = ALIGN)
     {
         return (num + align - 1) & ~(align - 1);

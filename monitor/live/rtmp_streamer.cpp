@@ -29,10 +29,6 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
 
     int32_t ret;
 
-    av_register_all();
-
-    avformat_network_init();
-
     fmt_ctx_ = avformat_alloc_context();
     if (!fmt_ctx_)
     {
@@ -113,7 +109,7 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
     AVPacket pkt;
     av_init_packet(&pkt);
 
-    pkt.flags = (frame.type == H264Frame::NaluType::ISLICE ? AV_PKT_FLAG_KEY :0);
+    pkt.flags = (frame.type == H264Frame::NaluType::ISLICE ? AV_PKT_FLAG_KEY : 0);
     pkt.data = frame.data;
     pkt.size = frame.len;
     pkt.pts = duration_ * frame_index_++;
@@ -125,6 +121,7 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
     if (ret != 0)
     {
         log_e("av_interleaved_write_frame failed,code %d", ret);
+        PRINT_FFMPEG_ERROR(ret);
         return static_cast<int>(KThirdPartyError);
     }
 

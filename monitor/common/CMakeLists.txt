@@ -6,4 +6,5 @@ add_library(common
 add_dependencies(common
     EasyLogger
     hisi_sdk
+    libav
 )

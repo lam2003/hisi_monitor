@@ -65,6 +65,13 @@
         log_e("error:%s", make_error_code(a).message().c_str()); \
         return static_cast<int>(a);                              \
     }
+#define PRINT_FFMPEG_ERROR(a)      \
+    do                             \
+    {                              \
+        char buf[1024];            \
+        av_strerror(a, buf, 1024); \
+        log_e("%s", buf);          \
+    } while (0)
 
 #define PIC_WIDTH 1920                               //mx290Í¼Ïñ¿í
 #define PIC_HEIGHT 1080                              //mx290Í¼Ïñ³¤

@@ -41,11 +41,10 @@ target_link_libraries(monitor
     libSDL2.a 
     libfreetype.a
     libavformat.a
-    libavdevice.a
+    # libavdevice.a
     libavcodec.a
     libavutil.a
     libavresample.a
-
     #self
     common
     video_capture

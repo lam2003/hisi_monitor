@@ -1,6 +1,11 @@
 #include "common/system.h"
 #include "common/res_code.h"
 
+extern "C"
+{
+#include "libavformat/avformat.h"
+}
+
 #include <chrono>
 
 namespace nvr
@@ -103,6 +108,13 @@ uint64_t System::GetSteadyMicroSeconds()
     auto now_since_epoch = now.time_since_epoch();
     return duration_cast<microseconds>(now_since_epoch).count();
 }
+
+void System::InitFFMPEG()
+{
+    av_register_all();
+    avformat_network_init();
+}
+
 
 int32_t System::VIUnBindVPSS()
 {

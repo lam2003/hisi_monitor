@@ -27,6 +27,9 @@ int main(int argc, char **argv)
     //初始化信号处理函数
     signal(SIGINT, signal_handler);
 
+    //初始化FFMPEG
+    System::InitFFMPEG();
+
     //初始化海思sdk
     log_i("initializing mpp...");
 
@@ -70,7 +73,7 @@ int main(int argc, char **argv)
                                                                        Config::Instance()->video.width,
                                                                        Config::Instance()->video.height,
                                                                        Config::Instance()->video.codec_type,
-                                                                       "rtmp://192.168.22.222/live/9"});
+                                                                       "rtmp://182.92.80.26:1935/live/fucking"});
     NVR_CHECK(NULL != live_module);
 
     video_codec_module->AddVideoSink(live_module);

@@ -5,5 +5,4 @@ add_library(live
 
 add_dependencies(live
     common
-    libav
     )
