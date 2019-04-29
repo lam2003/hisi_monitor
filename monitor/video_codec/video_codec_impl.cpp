@@ -24,7 +24,7 @@ rtc::scoped_refptr<VideoCodecModule> VideoCodecImpl::Create(const Params &params
 
     return implemention;
 }
-
+ 
 int32_t VideoCodecImpl::StartVENCChn(const Params &params)
 {
     int32_t ret;
@@ -302,12 +302,12 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
                 {
                     for (uint32_t i = 0; i < stream.u32PackCount; i++)
                     {
-                 
+
                         H264Frame frame;
                         //ÅÐ¶Ïh264Ö¡ÀàÐÍ stream.pstPack[i].pu8Addr[4] & 0x1f
                         frame.type = static_cast<int>(stream.pstPack[i].DataType.enH264EType);
-                        frame.data = stream.pstPack[i].pu8Addr ;
-                        frame.len = stream.pstPack[i].u32Len ;
+                        frame.data = stream.pstPack[i].pu8Addr;
+                        frame.len = stream.pstPack[i].u32Len;
                         frame.ts = stream.pstPack[i].u64PTS;
                         for (size_t j = 0; j < video_sinks_.size(); j++)
                             video_sinks_[j]->OnFrame(frame);

@@ -26,12 +26,10 @@ struct Config
             frame_rate = 20;
             width = 1280;
             height = 720;
-
             codec_type = H264;
             codec_mode = CBR;
             codec_profile = 0;
             codec_bitrate = 2048; //k
-
         }
         //common
         int32_t frame_rate;
@@ -45,8 +43,31 @@ struct Config
         int32_t codec_bitrate;
     };
 
+    struct Detect
+    {
+        Detect()
+        {
+            width = 720;
+            height = 480;
+        }
+
+        int32_t width;
+        int32_t height;
+    };
+
+    struct Rtmp
+    {
+        Rtmp()
+        {
+            url = "rtmp://192.168.22.222/live/test";
+        }
+
+        std::string url;
+    };
+
     System system;
     Video video;
+    Detect detect;
 
     static Config *Instance()
     {

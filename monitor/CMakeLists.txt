@@ -1,6 +1,7 @@
 add_subdirectory(common)
 add_subdirectory(video_capture)
 add_subdirectory(video_process)
+add_subdirectory(video_detect)
 add_subdirectory(video_codec)
 add_subdirectory(live)
 add_subdirectory(record)
@@ -13,6 +14,7 @@ add_dependencies(monitor
     common
     video_capture
     video_process
+    video_detect
     video_codec
     live
     record
@@ -53,6 +55,7 @@ target_link_libraries(monitor
     common
     video_capture
     video_process
+    video_detect
     video_codec
     live
     record

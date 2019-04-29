@@ -18,7 +18,7 @@ struct System
         return (num + align - 1) & ~(align - 1);
     }
 
-    static int32_t CalcPicVbBlkSize(int align = ALIGN);
+    static int32_t CalcPicVbBlkSize(int width,int height,int align = ALIGN);
 
     static uint64_t GetSteadyMicroSeconds();
 

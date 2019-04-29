@@ -48,7 +48,9 @@ int main(int argc, char **argv)
 
     rtc::scoped_refptr<VideoProcessModule> video_process_module = VideoProcessImpl::Create({Config::Instance()->video.frame_rate,
                                                                                             Config::Instance()->video.width,
-                                                                                            Config::Instance()->video.height});
+                                                                                            Config::Instance()->video.height,
+                                                                                            Config::Instance()->detect.width,
+                                                                                            Config::Instance()->detect.height});
     NVR_CHECK(NULL != video_process_module)
 
     log_i("binding video capture and video process...");

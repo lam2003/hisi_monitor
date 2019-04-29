@@ -27,9 +27,13 @@ private:
 
     void StopVPSSGroup();
 
-    int32_t StartVPSSChn(const Params &params);
+    int32_t StartVPSSEncodeChn(const Params &params);
 
-    void StopVPSSChn();
+    void StopVPSSEncodeChn();
+
+    int32_t StartVPSSDetectChn(const Params &params);
+
+    void StopVPSSDetectChn();
 
 private:
     bool init_;

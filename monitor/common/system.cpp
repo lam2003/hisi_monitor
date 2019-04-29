@@ -14,12 +14,11 @@ namespace nvr
 int32_t System::InitMPP()
 {
     int32_t ret;
-    int32_t pic_vb_blk_size = CalcPicVbBlkSize();
 
     VB_CONF_S vb_cfg;
     memset(&vb_cfg, 0, sizeof(VB_CONF_S));
     vb_cfg.u32MaxPoolCnt = VB_POOLS_NUM;
-    vb_cfg.astCommPool[0].u32BlkSize = pic_vb_blk_size; 
+    vb_cfg.astCommPool[0].u32BlkSize = CalcPicVbBlkSize(PIC_WIDTH, PIC_HEIGHT);
     vb_cfg.astCommPool[0].u32BlkCnt = VB_MEM_BLK_NUM;
 
     ret = HI_MPI_SYS_Exit();
@@ -28,7 +27,7 @@ int32_t System::InitMPP()
 
     ret = HI_MPI_VB_Exit();
     if (HI_SUCCESS != ret)
-        log_e("HI_MPI_VB_Exit failed,code %#x", ret); 
+        log_e("HI_MPI_VB_Exit failed,code %#x", ret);
 
     ret = HI_MPI_VB_SetConf(&vb_cfg);
     if (HI_SUCCESS != ret)
@@ -92,12 +91,12 @@ void System::InitLogger()
     elog_start();
 }
 
-int32_t System::CalcPicVbBlkSize(int align)
+int32_t System::CalcPicVbBlkSize(int width, int height, int align)
 {
     int32_t vb_pic_header_size;
-    int32_t align_width = Align(PIC_WIDTH, align);
-    int32_t align_height = Align(PIC_HEIGHT, align);
-    VB_PIC_HEADER_SIZE(PIC_WIDTH, PIC_HEIGHT, PIXEL_FORMAT, vb_pic_header_size);
+    int32_t align_width = Align(width, align);
+    int32_t align_height = Align(height, align);
+    VB_PIC_HEADER_SIZE(width, height, PIXEL_FORMAT, vb_pic_header_size);
     return vb_pic_header_size + ((align_width * align_height) * 3 >> 1);
 }
 
@@ -115,7 +114,6 @@ void System::InitFFMPEG()
     avformat_network_init();
 }
 
-
 int32_t System::VIUnBindVPSS()
 {
     int32_t ret;
@@ -128,7 +126,7 @@ int32_t System::VIUnBindVPSS()
     MPP_CHN_S dest_chn;
     dest_chn.enModId = HI_ID_VPSS;
     dest_chn.s32DevId = NVR_VPSS_GRP;
-    dest_chn.s32ChnId = NVR_VPSS_CHN;
+    dest_chn.s32ChnId = 0;
 
     ret = HI_MPI_SYS_UnBind(&src_chn, &dest_chn);
     if (HI_SUCCESS != ret)
@@ -152,7 +150,7 @@ int32_t System::VIBindVPSS()
     MPP_CHN_S dest_chn;
     dest_chn.enModId = HI_ID_VPSS;
     dest_chn.s32DevId = NVR_VPSS_GRP;
-    dest_chn.s32ChnId = NVR_VPSS_CHN;
+    dest_chn.s32ChnId = 0;
 
     ret = HI_MPI_SYS_Bind(&src_chn, &dest_chn);
     if (HI_SUCCESS != ret)
@@ -171,7 +169,7 @@ int32_t System::VPSSUnBindVENC()
     MPP_CHN_S src_chn;
     src_chn.enModId = HI_ID_VPSS;
     src_chn.s32DevId = NVR_VPSS_GRP;
-    src_chn.s32ChnId = NVR_VPSS_CHN;
+    src_chn.s32ChnId = NVR_VPSS_ENCODE_CHN;
 
     MPP_CHN_S dest_chn;
     dest_chn.enModId = HI_ID_VENC;
@@ -195,7 +193,7 @@ int32_t System::VPSSBindVENC()
     MPP_CHN_S src_chn;
     src_chn.enModId = HI_ID_VPSS;
     src_chn.s32DevId = NVR_VPSS_GRP;
-    src_chn.s32ChnId = NVR_VPSS_CHN;
+    src_chn.s32ChnId = NVR_VPSS_ENCODE_CHN;
 
     MPP_CHN_S dest_chn;
     dest_chn.enModId = HI_ID_VENC;

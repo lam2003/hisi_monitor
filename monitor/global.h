@@ -88,12 +88,14 @@
 #define VB_MEM_BLK_NUM 5                             //内存块数量
 #define BUFFER_SIZE 262144                           //缓存大小
 
-#define NVR_ISP_DEV 0  //ISP设备
-#define NVR_VI_DEV 0   //VI设备
-#define NVR_VI_CHN 0   //VI通道
-#define NVR_VPSS_GRP 0 //VPSS组
-#define NVR_VPSS_CHN 1 //VPSS通道
-#define NVR_VENC_CHN 0 //VENC通道
+#define NVR_ISP_DEV 0         //ISP设备
+#define NVR_VI_DEV 0          //VI设备
+#define NVR_VI_CHN 0          //VI通道
+#define NVR_VPSS_GRP 0        //VPSS组
+#define NVR_VPSS_ENCODE_CHN 1 //VPSS编码通道
+#define NVR_VPSS_DETECT_CHN 2 //VPSS检测通道
+#define NVR_VENC_CHN 0        //VENC通道
+#define NVR_VDA_CHN 0         //VDA通道
 
 // arm-hisiv500-linux-g++不支持
 // template<typename T>

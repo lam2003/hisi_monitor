@@ -78,7 +78,7 @@ void VideoProcessImpl::StopVPSSGroup()
         log_e("HI_MPI_VPSS_DestroyGrp failed,code %#x", ret);
 }
 
-int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
+int32_t VideoProcessImpl::StartVPSSEncodeChn(const Params &params)
 {
     int32_t ret;
 
@@ -87,7 +87,7 @@ int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
     chn_attr.s32SrcFrameRate = FRAME_RATE;
     chn_attr.s32DstFrameRate = params.frame_rate;
 
-    ret = HI_MPI_VPSS_SetChnAttr(NVR_VPSS_GRP, NVR_VPSS_CHN, &chn_attr);
+    ret = HI_MPI_VPSS_SetChnAttr(NVR_VPSS_GRP, NVR_VPSS_ENCODE_CHN, &chn_attr);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_VPSS_SetChnAttr failed,code %#x", ret);
@@ -99,18 +99,18 @@ int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
     chn_mode.enChnMode = VPSS_CHN_MODE_USER;
     chn_mode.bDouble = HI_FALSE;
     chn_mode.enPixelFormat = PIXEL_FORMAT;
-    chn_mode.u32Width = params.width;
-    chn_mode.u32Height = params.height;
+    chn_mode.u32Width = params.encode_width;
+    chn_mode.u32Height = params.encode_height;
     chn_mode.enCompressMode = COMPRESS_MODE_SEG;
 
-    ret = HI_MPI_VPSS_SetChnMode(NVR_VPSS_GRP, NVR_VPSS_CHN, &chn_mode);
+    ret = HI_MPI_VPSS_SetChnMode(NVR_VPSS_GRP, NVR_VPSS_ENCODE_CHN, &chn_mode);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_VPSS_SetChnMode failed,code %#x", ret);
         return static_cast<int>(KMPPError);
     }
 
-    ret = HI_MPI_VPSS_EnableChn(NVR_VPSS_GRP, NVR_VPSS_CHN);
+    ret = HI_MPI_VPSS_EnableChn(NVR_VPSS_GRP, NVR_VPSS_ENCODE_CHN);
     if (HI_SUCCESS != ret)
     {
         log_e("HI_MPI_VPSS_EnableChn failed,code %#x", ret);
@@ -120,11 +120,61 @@ int32_t VideoProcessImpl::StartVPSSChn(const Params &params)
     return static_cast<int>(KSuccess);
 }
 
-void VideoProcessImpl::StopVPSSChn()
+void VideoProcessImpl::StopVPSSEncodeChn()
 {
     int32_t ret;
 
-    ret = HI_MPI_VPSS_DisableChn(NVR_VPSS_GRP, NVR_VPSS_CHN);
+    ret = HI_MPI_VPSS_DisableChn(NVR_VPSS_GRP, NVR_VPSS_ENCODE_CHN);
+    if (HI_SUCCESS != ret)
+        log_e("HI_MPI_VPSS_DisableChn failed,code %#x", ret);
+}
+
+int32_t VideoProcessImpl::StartVPSSDetectChn(const Params &params)
+{
+    int32_t ret;
+
+    VPSS_CHN_ATTR_S chn_attr;
+    memset(&chn_attr, 0, sizeof(chn_attr));
+    chn_attr.s32SrcFrameRate = FRAME_RATE;
+    chn_attr.s32DstFrameRate = params.frame_rate;
+
+    ret = HI_MPI_VPSS_SetChnAttr(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &chn_attr);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_VPSS_SetChnAttr failed,code %#x", ret);
+        return static_cast<int>(KMPPError);
+    }
+
+    VPSS_CHN_MODE_S chn_mode;
+    memset(&chn_mode, 0, sizeof(chn_mode));
+    chn_mode.enChnMode = VPSS_CHN_MODE_USER;
+    chn_mode.bDouble = HI_FALSE;
+    chn_mode.enPixelFormat = PIXEL_FORMAT;
+    chn_mode.u32Width = params.detect_width;
+    chn_mode.u32Height = params.detect_height;
+    chn_mode.enCompressMode = COMPRESS_MODE_NONE;
+
+    ret = HI_MPI_VPSS_SetChnMode(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &chn_mode);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_VPSS_SetChnMode failed,code %#x", ret);
+        return static_cast<int>(KMPPError);
+    }
+
+    ret = HI_MPI_VPSS_EnableChn(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN);
+    if (HI_SUCCESS != ret)
+    {
+        log_e("HI_MPI_VPSS_EnableChn failed,code %#x", ret);
+        return static_cast<int>(KMPPError);
+    }
+
+    return static_cast<int>(KSuccess);
+}
+
+void VideoProcessImpl::StopVPSSDetectChn()
+{
+    int32_t ret;
+    ret = HI_MPI_VPSS_DisableChn(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN);
     if (HI_SUCCESS != ret)
         log_e("HI_MPI_VPSS_DisableChn failed,code %#x", ret);
 }
@@ -139,7 +189,11 @@ int32_t VideoProcessImpl::Initialize(const Params &params)
     if (KSuccess != code)
         return static_cast<int>(code);
 
-    code = static_cast<err_code>(StartVPSSChn(params));
+    code = static_cast<err_code>(StartVPSSEncodeChn(params));
+    if (KSuccess != code)
+        return static_cast<int>(code);
+
+    code = static_cast<err_code>(StartVPSSDetectChn(params));
     if (KSuccess != code)
         return static_cast<int>(code);
 
@@ -153,7 +207,9 @@ void VideoProcessImpl::Close()
     if (!init_)
         return;
 
-    StopVPSSChn();
+    StopVPSSDetectChn();
+
+    StopVPSSEncodeChn();
 
     StopVPSSGroup();
 
