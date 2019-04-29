@@ -3,6 +3,7 @@ add_subdirectory(video_capture)
 add_subdirectory(video_process)
 add_subdirectory(video_codec)
 add_subdirectory(live)
+add_subdirectory(record)
 
 add_executable(monitor 
     main.cpp
@@ -13,6 +14,8 @@ add_dependencies(monitor
     video_capture
     video_process
     video_codec
+    live
+    record
 )
 
 
@@ -45,12 +48,14 @@ target_link_libraries(monitor
     libavcodec.a
     libavutil.a
     libavresample.a
+    libev.a
     #self
     common
     video_capture
     video_process
     video_codec
     live
+    record
 )
 
 

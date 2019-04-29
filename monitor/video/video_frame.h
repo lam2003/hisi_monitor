@@ -8,7 +8,7 @@ struct VideoFrame
 {
   virtual ~VideoFrame() = default;
 
-  virtual int32_t GetCodecType() const = 0;
+  virtual int32_t GetCodecType() const { return 0; }
 
   uint8_t *data;
 

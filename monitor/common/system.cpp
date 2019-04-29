@@ -19,7 +19,7 @@ int32_t System::InitMPP()
     VB_CONF_S vb_cfg;
     memset(&vb_cfg, 0, sizeof(VB_CONF_S));
     vb_cfg.u32MaxPoolCnt = VB_POOLS_NUM;
-    vb_cfg.astCommPool[0].u32BlkSize = pic_vb_blk_size;
+    vb_cfg.astCommPool[0].u32BlkSize = pic_vb_blk_size; 
     vb_cfg.astCommPool[0].u32BlkCnt = VB_MEM_BLK_NUM;
 
     ret = HI_MPI_SYS_Exit();
@@ -28,7 +28,7 @@ int32_t System::InitMPP()
 
     ret = HI_MPI_VB_Exit();
     if (HI_SUCCESS != ret)
-        log_e("HI_MPI_VB_Exit failed,code %#x", ret);
+        log_e("HI_MPI_VB_Exit failed,code %#x", ret); 
 
     ret = HI_MPI_VB_SetConf(&vb_cfg);
     if (HI_SUCCESS != ret)

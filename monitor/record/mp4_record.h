@@ -1,7 +1,7 @@
-#ifndef RTMP_H_
-#define RTMP_H_
+#ifndef MP4_RECORD_H_
+#define MP4_RECORD_H_
 
-#include "live/live.h"
+#include "record/record.h"
 #include "common/buffer.h"
 
 #include <memory>
@@ -11,21 +11,21 @@
 
 namespace nvr
 {
-class RtmpLiveImpl : public LiveModule
+class MP4RecordImpl : public RecordModule
 {
 public:
-    static rtc::scoped_refptr<LiveModule> Create(const Params &params);
+    static rtc::scoped_refptr<RecordModule> Create(const Params &params);
 
     int32_t Initialize(const Params &params) override;
 
     void Close() override;
 
-    void OnFrame(const VideoFrame &frame) override;
+    void OnFrame(const VideoFrame &) override;
 
 protected:
-    RtmpLiveImpl();
+    MP4RecordImpl();
 
-    ~RtmpLiveImpl() override;
+    ~MP4RecordImpl() override;
 
 private:
     Buffer<> buffer_;
@@ -35,6 +35,7 @@ private:
     std::unique_ptr<std::thread> thread_;
     bool init_;
 };
+
 } // namespace nvr
 
 #endif

@@ -5,6 +5,7 @@
 #include "video_process/video_process_impl.h"
 #include "video_codec/video_codec_impl.h"
 #include "live/rtmp.h"
+#include "record/mp4_record.h"
 
 using namespace nvr;
 
@@ -68,15 +69,26 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
-    log_i("initializing live...");
-    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
-                                                                       Config::Instance()->video.width,
-                                                                       Config::Instance()->video.height,
-                                                                       Config::Instance()->video.codec_type,
-                                                                       "rtmp://182.92.80.26:1935/live/fucking"});
-    NVR_CHECK(NULL != live_module);
+    // log_i("initializing live...");
+    // rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
+    //                                                                    Config::Instance()->video.width,
+    //                                                                    Config::Instance()->video.height,
+    //                                                                    Config::Instance()->video.codec_type,
+    //                                                                    "rtmp://182.92.80.26:1935/live/fucking"});
+    // NVR_CHECK(NULL != live_module);
 
-    video_codec_module->AddVideoSink(live_module);
+    // video_codec_module->AddVideoSink(live_module);
+
+    log_i("initializing record...");
+    rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
+                                                                               Config::Instance()->video.width,
+                                                                               Config::Instance()->video.height,
+                                                                               Config::Instance()->video.codec_type,
+                                                                               "1997.mp4"});
+    NVR_CHECK(NULL != record_module);
+
+    
+    video_codec_module->AddVideoSink(record_module);
 
     while (KRun)
         sleep(1000);

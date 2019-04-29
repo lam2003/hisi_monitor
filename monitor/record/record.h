@@ -1,5 +1,5 @@
-#ifndef LIVE_MODULE_H_
-#define LIVE_MODULE_H_
+#ifndef RECORD_MODULE_H_
+#define RECORD_MODULE_H_
 
 #include "base/ref_count.h"
 #include "base/scoped_refptr.h"
@@ -10,18 +10,17 @@
 
 namespace nvr
 {
-class LiveModule : public rtc::RefCountInterface, public VideoSinkInterface<VideoFrame>
+class RecordModule : public rtc::RefCountInterface, public VideoSinkInterface<VideoFrame>
 {
 public:
     struct Params
     {
-        int32_t frame_rate;
-        int32_t width;
-        int32_t height;
+        int frame_rate;
+        int width;
+        int height;
         VideoCodecType codec_type;
-        std::string url;
+        std::string filename;
     };
-
     virtual int32_t Initialize(const Params &params) = 0;
 
     virtual void Close() = 0;
@@ -29,8 +28,8 @@ public:
     virtual void OnFrame(const VideoFrame &) override = 0;
 
 protected:
-    ~LiveModule() override = default;
+    virtual ~RecordModule() override = default;
 };
-}; // namespace nvr
+} // namespace nvr
 
 #endif

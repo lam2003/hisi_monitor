@@ -10,7 +10,8 @@ enum err_code
     KMPPError = 0x3,
     KVIChnError = 0x4,
     KThirdPartyError = 0x5,
-    KUnInitialize = 0x6
+    KUnInitialize = 0x6,
+    KSystemError = 0x7
 };
 
 class NVRErrorCategory : public std::error_category
@@ -33,6 +34,8 @@ class NVRErrorCategory : public std::error_category
             return "thirdparty library error";
         case err_code::KUnInitialize:
             return "not initialize";
+        case err_code::KSystemError:
+            return "system error";
         default:
             return "unknow";
         }

@@ -5,7 +5,7 @@
 
 extern "C"
 {
-#include "libavformat/avformat.h"
+#include <libavformat/avformat.h>
 }
 
 namespace nvr
@@ -22,11 +22,11 @@ public:
                        int32_t height,
                        int32_t frame_rate,
                        const std::string &sps,
-                       const std::string &pps);
+                       const std::string &pps) override;
 
-    void Close();
+    void Close() override;
 
-    int32_t WriteVideoFrame(const VideoFrame &frame);
+    int32_t WriteVideoFrame(const VideoFrame &frame) override;
 
 private:
     AVFormatContext *fmt_ctx_;

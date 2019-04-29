@@ -1,3 +1,5 @@
+#ifndef BUFFER_H_
+#define BUFFER_H_
 namespace nvr
 {
 template <unsigned BlockSize>
@@ -102,3 +104,5 @@ private:
 };
 
 }; // namespace nvr
+
+#endif

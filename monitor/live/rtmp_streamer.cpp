@@ -2,6 +2,8 @@
 #include "common/res_code.h"
 #include "video_codec/video_codec_define.h"
 
+#define RTMP_STREAMER_BUFFER_SIZE 131072 //128k
+
 namespace nvr
 {
 
@@ -67,8 +69,6 @@ int32_t RTMPStreamer::Initialize(const std::string &url,
     memcpy(stream->codecpar->extradata + sps.length(), pps.c_str(), pps.length());
     if (fmt_ctx_->oformat->flags & AVFMT_GLOBALHEADER)
         stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
-    stream->codec->gop_size = frame_rate;
     fmt_ctx_->streams[0] = stream;
 
     av_dump_format(fmt_ctx_, 0, url.c_str(), 1);
@@ -116,6 +116,12 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
     pkt.dts = pkt.pts;
     pkt.duration = duration_;
     pkt.pos = -1;
+    printf("pkt.size=%d pkt.pts=%lld pkt.dts=%lld pkt.duration=%lld frame.type=%d\n",
+           pkt.size,
+           pkt.pts,
+           pkt.dts,
+           pkt.duration,
+           frame.type);
 
     ret = av_interleaved_write_frame(fmt_ctx_, &pkt);
     if (ret != 0)

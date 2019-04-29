@@ -38,11 +38,9 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
         RTMPStreamer rtmp_streamer;
         H264Frame frame;
         std::string sps, pps;
-        uint8_t *buf;
-
+      
         bool streamer_init = false;
-        buf = (uint8_t *)malloc(512 * 1024);
-
+   
         while (run_)
         {
             std::unique_lock<std::mutex> lock(mux_);
