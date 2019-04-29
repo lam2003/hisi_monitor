@@ -1,6 +1,8 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
+#include "global.h"
+
 namespace nvr
 {
 struct System

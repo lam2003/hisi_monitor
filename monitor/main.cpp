@@ -84,36 +84,39 @@ int main(int argc, char **argv)
     CHACK_ERROR(code)
 
     // //≥ı ºªØ÷±≤•
-    // log_i("initializing live...");
-    // rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
-    //                                                                    Config::Instance()->video.width,
-    //                                                                    Config::Instance()->video.height,
-    //                                                                    Config::Instance()->video.codec_type,
-    //                                                                    "rtmp://182.92.80.26:1935/live/fucking"});
-    // NVR_CHECK(NULL != live_module);
+    log_i("initializing live...");
+    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
+                                                                       Config::Instance()->video.width,
+                                                                       Config::Instance()->video.height,
+                                                                       Config::Instance()->video.codec_type,
+                                                                       Config::Instance()->rtmp.url});
+    NVR_CHECK(NULL != live_module);
 
-    // log_i("attach live to video encode...");
-    // video_codec_module->AddVideoSink(live_module);
+    log_i("attach live to video encode...");
+    video_codec_module->AddVideoSink(live_module);
 
-    log_i("initializing record...");
-    rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
-                                                                            Config::Instance()->video.width,
-                                                                            Config::Instance()->video.height,
-                                                                            Config::Instance()->video.codec_type,
-                                                                            "1997.mp4"});
-    NVR_CHECK(NULL != record_module);
+    // log_i("initializing record...");
+    // rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
+    //                                                                         Config::Instance()->video.width,
+    //                                                                         Config::Instance()->video.height,
+    //                                                                         Config::Instance()->video.codec_type,
+    //                                                                         "1997.mp4"});
+    // NVR_CHECK(NULL != record_module);
 
-    log_i("attach record to video encode...");
-    video_codec_module->AddVideoSink(record_module);
+    // log_i("attach record to video encode...");
+    // video_codec_module->AddVideoSink(record_module);
 
     while (KRun)
         sleep(1000);
 
-    log_i("detch record and video encode...");
+    log_i("detch live/record and video encode...");
     video_codec_module->ClearVideoSink();
 
-    log_i("closing record...");
-    record_module->Close();
+    // log_i("closing record...");
+    // record_module->Close();
+
+    log_i("closing live...");
+    live_module->Close();
 
     log_i("unbinding video process and video encode...");
     System::VPSSUnBindVENC();

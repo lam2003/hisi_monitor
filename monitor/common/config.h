@@ -70,6 +70,7 @@ struct Config
     System system;
     Video video;
     Detect detect;
+    Rtmp rtmp;
 
     static Config *Instance()
     {

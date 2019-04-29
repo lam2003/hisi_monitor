@@ -1,7 +1,7 @@
 #ifndef STREAMER_H_
 #define STREAMER_H_
 
-#include "video/video_frame.h"
+#include "video_codec/video_codec_define.h"
 
 #include <string>
 
@@ -17,7 +17,21 @@ public:
                                int32_t height,
                                int32_t frame_rate,
                                const std::string &sps,
-                               const std::string &pps) = 0;
+                               const std::string &pps) { return 0; }
+
+    virtual int32_t Initialize(const std::string &url,
+                               int32_t width,
+                               int32_t height,
+                               int32_t frame_rate,
+                               const std::string &sps,
+                               const std::string &pps,
+                               VideoCodecType codec_type) { return 0; }
+
+    virtual int32_t Initialize(const std::string &url,
+                               int32_t width,
+                               int32_t height,
+                               int32_t frame_rate,
+                               VideoCodecType codec_type) { return 0; }
 
     virtual void Close() = 0;
 

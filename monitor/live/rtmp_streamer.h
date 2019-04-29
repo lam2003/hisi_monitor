@@ -7,6 +7,7 @@ extern "C"
 {
 #include <libavformat/avformat.h>
 }
+//使用ffmpeg,由于3516A100V的内存资源限制,换成更加轻量化的rtmpdump
 
 namespace nvr
 {

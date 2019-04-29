@@ -88,7 +88,7 @@
 #define PIC_SIZE PIC_HD1080                          //1080P采样
 #define ALIGN 64                                     //默认内存对齐大小
 #define VB_POOLS_NUM 128                             //缓冲池数量
-#define VB_MEM_BLK_NUM 3                             //内存块数量
+#define VB_MEM_BLK_NUM 5                             //内存块数量(3516A100V内存不足,系统无法使用1080P)
 
 #define NVR_ISP_DEV 0         //ISP设备
 #define NVR_VI_DEV 0          //VI设备

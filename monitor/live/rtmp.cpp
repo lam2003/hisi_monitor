@@ -2,7 +2,7 @@
 #include "common/res_code.h"
 #include "base/ref_counted_object.h"
 #include "live/rtmp_streamer.h"
-
+#include "live/rtmp_streamer2.h"
 #define IO_BUFFER_SIZE (32 * 1024)
 
 namespace nvr
@@ -35,16 +35,26 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
     run_ = true;
     thread_ = std::unique_ptr<std::thread>(new std::thread([this, params]() {
         err_code code;
-        RTMPStreamer rtmp_streamer;
-        H264Frame frame;
-        std::string sps, pps;
-      
-        bool streamer_init = false;
-   
+        RTMPStreamer2 rtmp_streamer;
+        VideoFrame frame;
+
+        bool init = false;
+
         while (run_)
         {
-            std::unique_lock<std::mutex> lock(mux_);
 
+            if (!init)
+            {
+                code = static_cast<err_code>(rtmp_streamer.Initialize(params.url, params.width, params.height, params.frame_rate, H264));
+                if (KSuccess != code)
+                {
+                    log_e("error:%s", make_error_code(code).message().c_str());
+                    return;
+                }
+                init = true;
+            }
+
+            std::unique_lock<std::mutex> lock(mux_);
             while (!buffer_.Get((uint8_t *)&frame, sizeof(frame)))
             {
                 cond_.wait(lock);
@@ -52,43 +62,22 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
                     break;
             }
 
-            frame.data = buffer_.GetCurrentPos();
-
-            if (!streamer_init && (frame.type == (int)H264Frame::NaluType::SPS || frame.type == (int)H264Frame::NaluType::PPS))
+            if (run_)
             {
-                if (frame.type == (int)H264Frame::NaluType::SPS)
-                    sps = std::string((char *)frame.data, frame.len);
-                else if (frame.type == (int)H264Frame::NaluType::PPS)
-                    pps = std::string((char *)frame.data, frame.len);
-
-                if (!sps.empty() && !pps.empty())
-                {
-                    code = static_cast<err_code>(rtmp_streamer.Initialize(params.url, params.width, params.height, params.frame_rate, sps, pps));
-                    if (KSuccess != code)
-                    {
-                        log_e("error:%s", make_error_code(code).message().c_str());
-                        return;
-                    }
-
-                    streamer_init = true;
-                }
-            }
-
-            if (streamer_init)
-            {
+                frame.data = buffer_.GetCurrentPos();
                 code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
                 if (KSuccess != code)
                 {
                     rtmp_streamer.Close();
                     buffer_.Clear();
-                    sps.clear();
-                    pps.clear();
-                    streamer_init = false;
+                    init_ = false;
                     log_w("rtmp connection break,try to reconnect...");
                 }
+                buffer_.Consume(frame.len);
             }
-            buffer_.Consume(frame.len);
         }
+
+        rtmp_streamer.Close();
     }));
 
     init_ = true;
