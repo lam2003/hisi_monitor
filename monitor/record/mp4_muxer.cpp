@@ -117,7 +117,7 @@ int32_t MP4Muxer::WriteVideoFrame(const VideoFrame &frame)
 int32_t MP4Muxer::WriteH264Frame(const VideoFrame &frame)
 {
     int32_t ret;
-printf("###########\n");
+
     if (frame.type == H264Frame::NaluType::SPS)
     {
         sps_ = std::string((char *)frame.data, frame.len);

@@ -39,6 +39,7 @@
 #include <hi_comm_aio.h>
 #include <hi_defines.h>
 #include <hi_mipi.h>
+#include <hi_md.h>
 #include <mpi_sys.h>
 #include <mpi_vb.h>
 #include <mpi_vi.h>
@@ -54,8 +55,10 @@
 #include <mpi_ae.h>
 #include <mpi_awb.h>
 #include <mpi_af.h>
+#include <mpi_ive.h>
 #include <hi_vreg.h>
 #include <hi_sns_ctrl.h>
+#include <ivs_md.h>
 
 #define NVR_CHECK(condition)                          \
     while (!(condition))                              \
@@ -85,8 +88,7 @@
 #define PIC_SIZE PIC_HD1080                          //1080P采样
 #define ALIGN 64                                     //默认内存对齐大小
 #define VB_POOLS_NUM 128                             //缓冲池数量
-#define VB_MEM_BLK_NUM 5                             //内存块数量
-#define BUFFER_SIZE 262144                           //缓存大小
+#define VB_MEM_BLK_NUM 3                             //内存块数量
 
 #define NVR_ISP_DEV 0         //ISP设备
 #define NVR_VI_DEV 0          //VI设备
@@ -95,6 +97,7 @@
 #define NVR_VPSS_ENCODE_CHN 1 //VPSS编码通道
 #define NVR_VPSS_DETECT_CHN 2 //VPSS检测通道
 #define NVR_VENC_CHN 0        //VENC通道
+#define NVR_MD_CHN 0          //MD通道
 #define NVR_VDA_CHN 0         //VDA通道
 
 // arm-hisiv500-linux-g++不支持

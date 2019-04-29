@@ -3,6 +3,7 @@
 
 #include "base/scoped_refptr.h"
 #include "base/ref_count.h"
+#include "video/video_sink_interface.h"
 
 namespace nvr
 {
@@ -16,11 +17,13 @@ public:
         int32_t encode_height;
         int32_t detect_width;
         int32_t detect_height;
-    }; 
+    };
 
     virtual int32_t Initialize(const Params &params) = 0;
 
     virtual void Close() = 0;
+
+    virtual void SetVideoSink(VideoSinkInterface<VIDEO_FRAME_INFO_S> *video_sink) = 0;
 
 protected:
     ~VideoProcessModule() override{};

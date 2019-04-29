@@ -22,7 +22,10 @@ rtc::scoped_refptr<VideoProcessModule> VideoProcessImpl::Create(const Params &pa
     return implemention;
 }
 
-VideoProcessImpl::VideoProcessImpl() : init_(false)
+VideoProcessImpl::VideoProcessImpl() : run_(false),
+                                       thread_(nullptr),
+                                       video_sink_(nullptr),
+                                       init_(false)
 {
 }
 
@@ -179,6 +182,58 @@ void VideoProcessImpl::StopVPSSDetectChn()
         log_e("HI_MPI_VPSS_DisableChn failed,code %#x", ret);
 }
 
+void VideoProcessImpl::StartProcessThread(const Params &params)
+{
+    run_ = true;
+    thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
+        int32_t ret;
+        VIDEO_FRAME_INFO_S frame_info;
+
+        ret = HI_MPI_VPSS_SetDepth(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, 1);
+        if (HI_SUCCESS != ret)
+        {
+            log_e("HI_MPI_VPSS_SetDepth failed,code %#x", ret);
+            return;
+        }
+
+        while (run_)
+        {
+            ret = HI_MPI_VPSS_GetChnFrame(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &frame_info, 500); //500ms
+            if (HI_SUCCESS != ret && HI_ERR_VPSS_BUF_EMPTY != ret)
+            {
+                log_e("HI_MPI_VPSS_GetChnFrame failed,code %#x", ret);
+                return;
+            }
+            
+            mux_.lock();
+            if (video_sink_)
+                video_sink_->OnFrame(frame_info);
+            mux_.unlock();
+
+            ret = HI_MPI_VPSS_ReleaseChnFrame(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &frame_info);
+            if (HI_SUCCESS != ret)
+            {
+                log_e("HI_MPI_VPSS_ReleaseChnFrame failed,code %#x", ret);
+                return;
+            }
+        }
+    }));
+};
+
+void VideoProcessImpl::StopProcessThread()
+{
+    run_ = false;
+    thread_->join();
+    thread_.reset();
+    thread_ = nullptr;
+}
+
+void VideoProcessImpl::SetVideoSink(VideoSinkInterface<VIDEO_FRAME_INFO_S> *video_sink)
+{
+    std::unique_lock<std::mutex> lock(mux_);
+    video_sink_ = video_sink;
+}
+
 int32_t VideoProcessImpl::Initialize(const Params &params)
 {
     if (init_)
@@ -197,6 +252,8 @@ int32_t VideoProcessImpl::Initialize(const Params &params)
     if (KSuccess != code)
         return static_cast<int>(code);
 
+    StartProcessThread(params);
+
     init_ = true;
 
     return static_cast<int>(KSuccess);
@@ -207,11 +264,15 @@ void VideoProcessImpl::Close()
     if (!init_)
         return;
 
+    StopProcessThread();
+
     StopVPSSDetectChn();
 
     StopVPSSEncodeChn();
 
     StopVPSSGroup();
+
+    video_sink_ = nullptr;
 
     init_ = false;
 }

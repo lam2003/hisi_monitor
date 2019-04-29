@@ -1,10 +1,11 @@
 #ifndef VIDEO_PROCESS_IMPL_H_
 #define VIDEO_PROCESS_IMPL_H_
 
+#include "video_process/video_process.h"
+
 #include <memory>
 #include <thread>
-
-#include "video_process/video_process.h"
+#include <mutex>
 
 namespace nvr
 {
@@ -16,6 +17,8 @@ public:
     int32_t Initialize(const Params &params) override;
 
     void Close() override;
+
+    void SetVideoSink(VideoSinkInterface<VIDEO_FRAME_INFO_S> *video_sink) override;
 
 protected:
     VideoProcessImpl();
@@ -35,7 +38,15 @@ private:
 
     void StopVPSSDetectChn();
 
+    void StartProcessThread(const Params &params);
+
+    void StopProcessThread();
+
 private:
+    std::mutex mux_;
+    bool run_;
+    std::unique_ptr<std::thread> thread_;
+    VideoSinkInterface<VIDEO_FRAME_INFO_S> *video_sink_;
     bool init_;
 };
 } // namespace nvr

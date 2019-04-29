@@ -49,10 +49,12 @@ struct Config
         {
             width = 720;
             height = 480;
+            trigger_thresh = 2;
         }
 
         int32_t width;
         int32_t height;
+        int32_t trigger_thresh;
     };
 
     struct Rtmp

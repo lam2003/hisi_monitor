@@ -29,6 +29,8 @@ public:
 
   virtual void AddVideoSink(VideoSinkInterface<VideoFrame> *video_sink) = 0;
 
+  virtual void ClearVideoSink() = 0;
+
 protected:
   ~VideoCodecModule() override {}
 };

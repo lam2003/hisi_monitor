@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace nvr
 {
@@ -20,6 +21,8 @@ public:
   void Close() override;
 
   void AddVideoSink(VideoSinkInterface<VideoFrame> *video_sink) override;
+
+  void ClearVideoSink() override;
 
 protected:
   VideoCodecImpl();
@@ -36,6 +39,7 @@ private:
   void StopGetStreamThread();
 
 private:
+  std::mutex mux_;
   bool run_;
   std::unique_ptr<std::thread> thread_;
   std::vector<VideoSinkInterface<VideoFrame> *> video_sinks_;

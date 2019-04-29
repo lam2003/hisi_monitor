@@ -24,7 +24,7 @@ rtc::scoped_refptr<VideoCodecModule> VideoCodecImpl::Create(const Params &params
 
     return implemention;
 }
- 
+
 int32_t VideoCodecImpl::StartVENCChn(const Params &params)
 {
     int32_t ret;
@@ -323,11 +323,12 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
                         frame.data = stream.pstPack[i].pu8Addr;
                         frame.len = stream.pstPack[i].u32Len;
                         frame.ts = stream.pstPack[i].u64PTS;
+                        std::unique_lock<std::mutex> lock(mux_);
                         for (size_t j = 0; j < video_sinks_.size(); j++)
                             video_sinks_[j]->OnFrame(frame);
                     }
                 }
-
+ 
                 ret = HI_MPI_VENC_ReleaseStream(NVR_VENC_CHN, &stream);
                 if (HI_SUCCESS != ret)
                 {
@@ -367,7 +368,14 @@ int32_t VideoCodecImpl::Initialize(const Params &params)
 }
 void VideoCodecImpl::AddVideoSink(VideoSinkInterface<VideoFrame> *video_sink)
 {
+    std::unique_lock<std::mutex> lock(mux_);
     video_sinks_.push_back(video_sink);
+}
+
+void VideoCodecImpl::ClearVideoSink()
+{
+    std::unique_lock<std::mutex> lock(mux_);
+    video_sinks_.clear();
 }
 
 void VideoCodecImpl::Close()
