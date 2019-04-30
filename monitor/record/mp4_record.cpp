@@ -1,5 +1,6 @@
 #include "record/mp4_record.h"
 #include "record/mp4_muxer.h"
+#include "record/mp4_muxer2.h"
 #include "common/res_code.h"
 #include "base/ref_counted_object.h"
 
@@ -31,7 +32,7 @@ int32_t MP4RecordImpl::Initialize(const Params &params)
     run_ = true;
     thread_ = std::unique_ptr<std::thread>(new std::thread([this, params]() {
         err_code code;
-        MP4Muxer muxer;
+        MP4Muxer2 muxer;
         VideoFrame frame;
 
         bool init = false;
@@ -39,7 +40,7 @@ int32_t MP4RecordImpl::Initialize(const Params &params)
         {
             if (!init)
             {
-                code = static_cast<err_code>(muxer.Initialize(params.filename, params.width, params.height, params.frame_rate, params.codec_type));
+                code = static_cast<err_code>(muxer.Initialize(params.filename, params.width, params.height, params.frame_rate));
                 if (KSuccess != code)
                 {
                     log_e("error:%s", make_error_code(code).message().c_str());

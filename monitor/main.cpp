@@ -91,36 +91,36 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
-    // //初始化直播
-    log_i("initializing live...");
-    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->rtmp.url});
-    NVR_CHECK(NULL != live_module);
+    //初始化直播
+    // log_i("initializing live...");
+    // rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->rtmp.url});
+    // NVR_CHECK(NULL != live_module);
 
-    log_i("attach live to video encode...");
-    video_codec_module->AddVideoSink(live_module);
+    // log_i("attach live to video encode...");
+    // video_codec_module->AddVideoSink(live_module);
 
-    // log_i("initializing record...");
-    // rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
-    //                                                                         Config::Instance()->video.width,
-    //                                                                         Config::Instance()->video.height,
-    //                                                                         Config::Instance()->video.codec_type,
-    //                                                                         "1997.mp4"});
-    // NVR_CHECK(NULL != record_module);
+    log_i("initializing record...");
+    rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
+                                                                            Config::Instance()->video.width,
+                                                                            Config::Instance()->video.height,
+                                                                            Config::Instance()->video.codec_type,
+                                                                            "1997.mp4"});
+    NVR_CHECK(NULL != record_module);
 
-    // log_i("attach record to video encode...");
-    // video_codec_module->AddVideoSink(record_module);
+    log_i("attach record to video encode...");
+    video_codec_module->AddVideoSink(record_module);
 
     while (KRun)
         sleep(1000);
-
+        
     log_i("detch live/record and video encode...");
     video_codec_module->ClearVideoSink();
 
-    // log_i("closing record...");
-    // record_module->Close();
+    log_i("closing record...");
+    record_module->Close();
 
-    log_i("closing live...");
-    live_module->Close();
+    // log_i("closing live...");
+    // live_module->Close();
 
     log_i("unbinding video process and video encode...");
     System::VPSSUnBindVENC();

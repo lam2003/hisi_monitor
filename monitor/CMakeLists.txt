@@ -53,6 +53,7 @@ target_link_libraries(monitor
     libev.a
     ${PROJECT_BINARY_DIR}/lib/srs_librtmp.a
     # librtmp.a
+    libmp4v2.a
     libz.a
     libssl.a
     libcrypto.a
