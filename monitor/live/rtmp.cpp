@@ -30,12 +30,10 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
     if (init_)
         return static_cast<int>(KDupInitialize);
 
-    NVR_CHECK(params.codec_type == H264);
-
     run_ = true;
     thread_ = std::unique_ptr<std::thread>(new std::thread([this, params]() {
         err_code code;
-        RTMPStreamer2 rtmp_streamer;
+        RTMPStreamer rtmp_streamer;
         VideoFrame frame;
 
         bool init = false;
@@ -45,7 +43,7 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
 
             if (!init)
             {
-                code = static_cast<err_code>(rtmp_streamer.Initialize(params.url, params.width, params.height, params.frame_rate, H264));
+                code = static_cast<err_code>(rtmp_streamer.Initialize(params.url));
                 if (KSuccess != code)
                 {
                     log_e("error:%s", make_error_code(code).message().c_str());
@@ -62,18 +60,26 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
                     break;
             }
 
+            // printf("get %d\n", sizeof(frame));
+            // printf("get %d\n", frame.len);
+
             if (run_)
             {
                 frame.data = buffer_.GetCurrentPos();
                 code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
                 if (KSuccess != code)
                 {
+                    log_w("rtmp connection break,try to reconnect...");
                     rtmp_streamer.Close();
                     buffer_.Clear();
-                    init_ = false;
-                    log_w("rtmp connection break,try to reconnect...");
+                    init = false;
+                    continue;
                 }
-                buffer_.Consume(frame.len);
+                if (!buffer_.Consume(frame.len))
+                {
+                    log_e("consme data from buffer failed,rest data not enough");
+                    return;
+                }
             }
         }
 
@@ -89,15 +95,16 @@ void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
     if (!init_)
         return;
 
-    NVR_CHECK(frame.GetCodecType() == H264);
-
     std::unique_lock<std::mutex>(mux_);
 
     if (buffer_.FreeSpace() < sizeof(frame) + frame.len)
         return;
-
+    
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
+    // printf("##################################\n");
+    // printf("append:%d\n", sizeof(frame));
     buffer_.Append(frame.data, frame.len);
+    // printf("append:%d\n", frame.len);
     cond_.notify_one();
 }
 

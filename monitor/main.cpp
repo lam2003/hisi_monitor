@@ -14,8 +14,15 @@ static bool KRun = true;
 
 void signal_handler(int signo)
 {
-    log_w("recevice SIGINT,quit process");
-    KRun = false;
+    if (signo == SIGINT)
+    {
+        log_w("recevice SIGINT,quit process");
+        KRun = false;
+    }
+    else if (signo == SIGPIPE)
+    {
+        log_w("recevice SIGPIPE");
+    }
 }
 
 int main(int argc, char **argv)
@@ -23,28 +30,29 @@ int main(int argc, char **argv)
     err_code code;
     uint64_t start_time, end_time;
 
-    //³õÊ¼»¯ÈÕÖ¾ÏµÍ³
+    //åˆå§‹åŒ–æ—¥å¿—ç³»ç»Ÿ
     System::InitLogger();
 
-    //³õÊ¼»¯ĞÅºÅ´¦Àíº¯Êı
+    //åˆå§‹åŒ–ä¿¡å·å¤„ç†å‡½æ•°
     signal(SIGINT, signal_handler);
+    signal(SIGPIPE, signal_handler);
 
-    //³õÊ¼»¯FFMPEG
+    //åˆå§‹åŒ–FFMPEG
     System::InitFFMPEG();
 
-    //³õÊ¼»¯º£Ë¼sdk
+    //åˆå§‹åŒ–æµ·æ€sdk
     log_i("initializing mpp...");
 
     code = static_cast<err_code>(System::InitMPP());
     CHACK_ERROR(code)
 
-    //³õÊ¼»¯ÊÓÆµ²É¼¯Ä£¿é
+    //åˆå§‹åŒ–è§†é¢‘é‡‡é›†æ¨¡å—
     log_i("initializing video capture...");
 
     rtc::scoped_refptr<VideoCaptureModule> video_capture_module = VideoCaptureImpl::Create();
     NVR_CHECK(NULL != video_capture_module)
 
-    //³õÊ¼»¯ÊÓÆµ´¦ÀíÄ£¿é
+    //åˆå§‹åŒ–è§†é¢‘å¤„ç†æ¨¡å—
     log_i("initializing video process...");
 
     rtc::scoped_refptr<VideoProcessModule> video_process_module = VideoProcessImpl::Create({Config::Instance()->video.frame_rate,
@@ -58,7 +66,7 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VIBindVPSS());
     CHACK_ERROR(code)
 
-    //³õÊ¼»¯ÔË¶¯Õì²âÄ£¿é
+    //åˆå§‹åŒ–è¿åŠ¨ä¾¦æµ‹æ¨¡å—
     log_i("initializing video detect...");
     rtc::scoped_refptr<VideoDetectModule> video_detect_module = VideoDetectImpl::Create({Config::Instance()->detect.width,
                                                                                          Config::Instance()->detect.height,
@@ -68,7 +76,7 @@ int main(int argc, char **argv)
     log_i("attach video detect to video process...");
     video_process_module->SetVideoSink(video_detect_module);
 
-    //³õÊ¼»¯ÊÓÆµ±àÂëÄ£¿é
+    //åˆå§‹åŒ–è§†é¢‘ç¼–ç æ¨¡å—
     log_i("initializing video encode...");
     rtc::scoped_refptr<VideoCodecModule> video_codec_module = VideoCodecImpl::Create({Config::Instance()->video.frame_rate,
                                                                                       Config::Instance()->video.width,
@@ -83,7 +91,7 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
-    // //³õÊ¼»¯Ö±²¥
+    // //åˆå§‹åŒ–ç›´æ’­
     log_i("initializing live...");
     rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
                                                                        Config::Instance()->video.width,

@@ -7,8 +7,6 @@
 namespace nvr
 {
 
-std::mutex RTMPStreamer2::KMux;
-
 RTMPStreamer2::RTMPStreamer2() : sps_(""),
                                  pps_(""),
                                  send_meta_(false),
@@ -37,20 +35,14 @@ void RTMPStreamer2::Close()
     send_meta_ = false;
     rtmp_ = nullptr;
     buf_ = nullptr;
-    
+
     init_ = false;
 }
 
-int32_t RTMPStreamer2::Initialize(const std::string &url,
-                                  int32_t width,
-                                  int32_t height,
-                                  int32_t frame_rate,
-                                  VideoCodecType codec_type)
+int32_t RTMPStreamer2::Initialize(const std::string &url)
 {
     if (init_)
         return static_cast<int>(KDupInitialize);
-
-    codec_type_ = codec_type;
 
     buf_ = (uint8_t *)malloc(RTMP_STREAMER_BUFFER_SIZE);
     if (!buf_)
@@ -58,6 +50,8 @@ int32_t RTMPStreamer2::Initialize(const std::string &url,
         log_e("malloc rtmp streamer buffer failed");
         return static_cast<int>(KSystemError);
     }
+    //rtmpdump初始化函数不可重入,需要加锁保证线程同步
+    static std::mutex KMux;
 
     KMux.lock();
     rtmp_ = RTMP_Alloc();
@@ -111,6 +105,7 @@ int32_t RTMPStreamer2::SendH264MetaData(const std::string &sps, const std::strin
     body[pos++] = 0x00;
     body[pos++] = 0x00;
     body[pos++] = 0x00;
+
     body[pos++] = 0x01;
     body[pos++] = sps.c_str()[5];
     body[pos++] = sps.c_str()[6];
@@ -147,7 +142,7 @@ int32_t RTMPStreamer2::SendH264MetaData(const std::string &sps, const std::strin
     return static_cast<int>(KSuccess);
 }
 
-int32_t RTMPStreamer2::SendH264Data(const VideoFrame &frame)
+int32_t RTMPStreamer2::WriteVideoFrame(const VideoFrame &frame)
 {
     if (frame.type == H264Frame::NaluType::SPS)
     {
@@ -204,7 +199,7 @@ int32_t RTMPStreamer2::SendH264Data(const VideoFrame &frame)
     pkt->m_packetType = RTMP_PACKET_TYPE_VIDEO;
     pkt->m_nInfoField2 = rtmp_->m_stream_id;
     pkt->m_nChannel = 0x04;
-    pkt->m_nTimeStamp = frame.ts / 1000; //frame.ts��λ΢��
+    pkt->m_nTimeStamp = RTMP_GetTime();
     pkt->m_headerType = RTMP_PACKET_SIZE_LARGE;
 
     ret = RTMP_SendPacket(rtmp_, pkt, true);
@@ -212,19 +207,6 @@ int32_t RTMPStreamer2::SendH264Data(const VideoFrame &frame)
     {
         log_e("RTMP_SendPacket failed,code %d", ret);
         return static_cast<int>(KThirdPartyError);
-    }
-
-    return static_cast<int>(KSuccess);
-}
-
-int32_t RTMPStreamer2::WriteVideoFrame(const VideoFrame &frame)
-{
-    if (codec_type_ == H264)
-    {
-        return SendH264Data(frame);
-    }
-    else if (codec_type_ == H265)
-    {
     }
 
     return static_cast<int>(KSuccess);

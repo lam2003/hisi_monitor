@@ -81,25 +81,25 @@
         log_e("%s", buf);          \
     } while (0)
 
-#define PIC_WIDTH 1920                               //mx290Í¼Ïñ¿í
-#define PIC_HEIGHT 1080                              //mx290Í¼Ïñ³¤
-#define FRAME_RATE 30                                //mx290Ô´Ö¡ÂÊ
-#define PIXEL_FORMAT PIXEL_FORMAT_YUV_SEMIPLANAR_420 //Ê¹ÓÃYUV420P
-#define PIC_SIZE PIC_HD1080                          //1080P²ÉÑù
-#define ALIGN 64                                     //Ä¬ÈÏÄÚ´æ¶ÔÆë´óĞ¡
-#define VB_POOLS_NUM 128                             //»º³å³ØÊıÁ¿
-#define VB_MEM_BLK_NUM 5                             //ÄÚ´æ¿éÊıÁ¿(3516A100VÄÚ´æ²»×ã,ÏµÍ³ÎŞ·¨Ê¹ÓÃ1080P)
+#define PIC_WIDTH 1920                               //mx290å›¾åƒå®½
+#define PIC_HEIGHT 1080                              //mx290å›¾åƒé•¿
+#define FRAME_RATE 30                                //mx290æºå¸§ç‡
+#define PIXEL_FORMAT PIXEL_FORMAT_YUV_SEMIPLANAR_420 //ä½¿ç”¨YUV420P
+#define PIC_SIZE PIC_HD1080                          //1080Pé‡‡æ ·
+#define ALIGN 64                                     //é»˜è®¤å†…å­˜å¯¹é½å¤§å°
+#define VB_POOLS_NUM 128                             //ç¼“å†²æ± æ•°é‡
+#define VB_MEM_BLK_NUM 5                             //å†…å­˜å—æ•°é‡(3516A100Vå†…å­˜ä¸è¶³,ç³»ç»Ÿæ— æ³•ä½¿ç”¨1080P)
 
-#define NVR_ISP_DEV 0         //ISPÉè±¸
-#define NVR_VI_DEV 0          //VIÉè±¸
-#define NVR_VI_CHN 0          //VIÍ¨µÀ
-#define NVR_VPSS_GRP 0        //VPSS×é
-#define NVR_VPSS_ENCODE_CHN 1 //VPSS±àÂëÍ¨µÀ
-#define NVR_VPSS_DETECT_CHN 2 //VPSS¼ì²âÍ¨µÀ
-#define NVR_VENC_CHN 0        //VENCÍ¨µÀ
-#define NVR_MD_CHN 0          //MDÍ¨µÀ
-#define NVR_VDA_CHN 0         //VDAÍ¨µÀ
+#define NVR_ISP_DEV 0         //ISPè®¾å¤‡
+#define NVR_VI_DEV 0          //VIè®¾å¤‡
+#define NVR_VI_CHN 0          //VIé€šé“
+#define NVR_VPSS_GRP 0        //VPSSç»„
+#define NVR_VPSS_ENCODE_CHN 1 //VPSSç¼–ç é€šé“
+#define NVR_VPSS_DETECT_CHN 2 //VPSSæ£€æµ‹é€šé“
+#define NVR_VENC_CHN 0        //VENCé€šé“
+#define NVR_MD_CHN 0          //MDé€šé“
+#define NVR_VDA_CHN 0         //VDAé€šé“
 
-// arm-hisiv500-linux-g++²»Ö§³Ö
+// arm-hisiv500-linux-g++ä¸æ”¯æŒ
 // template<typename T>
 // T GLOBAL;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-#ÅäÖÃ½»²æ±àÒë
+#é…ç½®äº¤å‰ç¼–è¯‘
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_C_COMPILER  arm-hisiv500-linux-gcc)
 SET(CMAKE_CXX_COMPILER arm-hisiv500-linux-g++)
@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_SKIP_RPATH true)
 set(CMAKE_BUILD_TYPE "Debug")
 
-#Èç¹ûÔÚÑ¡ÏîÖĞ¼ÓÈë -DALL_STATIC=1 Ê¹ÓÃ¾²Ì¬gcc¿âÒÔ¼°¾²Ì¬g++¿â½øĞĞÁ´½Ó
+#å¦‚æœåœ¨é€‰é¡¹ä¸­åŠ å…¥ -DALL_STATIC=1 ä½¿ç”¨é™æ€gccåº“ä»¥åŠé™æ€g++åº“è¿›è¡Œé“¾æ¥
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 message(STATUS "project will link against gcc-static g++-static")

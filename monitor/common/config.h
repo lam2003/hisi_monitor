@@ -23,12 +23,12 @@ struct Config
     {
         Video()
         {
-            frame_rate = 20;
+            frame_rate = 25;
             width = 1280;
             height = 720;
             codec_type = H264;
             codec_mode = CBR;
-            codec_profile = 0;
+            codec_profile = 2;
             codec_bitrate = 2048; //k
         }
         //common
@@ -61,7 +61,8 @@ struct Config
     {
         Rtmp()
         {
-            url = "rtmp://192.168.22.222/live/test";
+            // url = "rtmp://192.168.22.222:1935/live/test";
+              url = "rtmp://127.0.0.1:1935/live/test";
         }
 
         std::string url;

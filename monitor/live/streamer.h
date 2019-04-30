@@ -30,8 +30,9 @@ public:
     virtual int32_t Initialize(const std::string &url,
                                int32_t width,
                                int32_t height,
-                               int32_t frame_rate,
-                               VideoCodecType codec_type) { return 0; }
+                               int32_t frame_rate) { return 0; }
+
+    virtual int32_t Initialize(const std::string &url) { return 0; }
 
     virtual void Close() = 0;
 
