@@ -93,11 +93,7 @@ int main(int argc, char **argv)
 
     // //初始化直播
     log_i("initializing live...");
-    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->video.frame_rate,
-                                                                       Config::Instance()->video.width,
-                                                                       Config::Instance()->video.height,
-                                                                       Config::Instance()->video.codec_type,
-                                                                       Config::Instance()->rtmp.url});
+    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->rtmp.url});
     NVR_CHECK(NULL != live_module);
 
     log_i("attach live to video encode...");

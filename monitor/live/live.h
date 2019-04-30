@@ -15,10 +15,6 @@ class LiveModule : public rtc::RefCountInterface, public VideoSinkInterface<Vide
 public:
     struct Params
     {
-        int32_t frame_rate;
-        int32_t width;
-        int32_t height;
-        VideoCodecType codec_type;
         std::string url;
     };
 

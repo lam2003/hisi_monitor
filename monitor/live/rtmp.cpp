@@ -2,8 +2,6 @@
 #include "common/res_code.h"
 #include "base/ref_counted_object.h"
 #include "live/rtmp_streamer.h"
-#include "live/rtmp_streamer2.h"
-#define IO_BUFFER_SIZE (32 * 1024)
 
 namespace nvr
 {
@@ -53,15 +51,12 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
             }
 
             std::unique_lock<std::mutex> lock(mux_);
-            while (!buffer_.Get((uint8_t *)&frame, sizeof(frame)))
+            while (run_ && !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
             {
                 cond_.wait(lock);
                 if (!run_)
                     break;
             }
-
-            // printf("get %d\n", sizeof(frame));
-            // printf("get %d\n", frame.len);
 
             if (run_)
             {
@@ -99,12 +94,9 @@ void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
 
     if (buffer_.FreeSpace() < sizeof(frame) + frame.len)
         return;
-    
+
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
-    // printf("##################################\n");
-    // printf("append:%d\n", sizeof(frame));
     buffer_.Append(frame.data, frame.len);
-    // printf("append:%d\n", frame.len);
     cond_.notify_one();
 }
 
@@ -118,7 +110,7 @@ void RtmpLiveImpl::Close()
     thread_->join();
     thread_.reset();
     thread_ = nullptr;
-
+    buffer_.Clear();
     init_ = false;
 }
 
