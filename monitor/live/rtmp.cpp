@@ -52,11 +52,8 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
 
             std::unique_lock<std::mutex> lock(mux_);
             while (run_ && !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
-            {
                 cond_.wait(lock);
-                if (!run_)
-                    break;
-            }
+            
 
             if (run_)
             {

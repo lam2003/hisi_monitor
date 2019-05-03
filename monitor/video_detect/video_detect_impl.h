@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace nvr
 {
@@ -29,17 +30,18 @@ protected:
     ~VideoDetectImpl() override;
 
 private:
-    int32_t StartMD(const Params &params);
+    int32_t StartMD();
 
     void StopMD();
 
-    int32_t AllocMemory(const Params &params);
+    int32_t AllocMemory();
 
     void FreeMemory();
 
     int32_t IVEDMAImage(const VIDEO_FRAME_INFO_S &frame_info, const IVE_DST_IMAGE_S &dst_image, HI_BOOL instant);
 
 private:
+    std::mutex mux_;
     IVE_SRC_IMAGE_S src_image_[2];
     IVE_DST_MEM_INFO_S dst_mem_info_;
     int32_t trigger_thresh_;

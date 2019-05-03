@@ -37,9 +37,6 @@ int main(int argc, char **argv)
     signal(SIGINT, signal_handler);
     signal(SIGPIPE, signal_handler);
 
-    //初始化FFMPEG
-    System::InitFFMPEG();
-
     //初始化海思sdk
     log_i("initializing mpp...");
 
@@ -57,9 +54,7 @@ int main(int argc, char **argv)
 
     rtc::scoped_refptr<VideoProcessModule> video_process_module = VideoProcessImpl::Create({Config::Instance()->video.frame_rate,
                                                                                             Config::Instance()->video.width,
-                                                                                            Config::Instance()->video.height,
-                                                                                            Config::Instance()->detect.width,
-                                                                                            Config::Instance()->detect.height});
+                                                                                            Config::Instance()->video.height});
     NVR_CHECK(NULL != video_process_module)
 
     log_i("binding video capture and video process...");
@@ -68,9 +63,7 @@ int main(int argc, char **argv)
 
     //初始化运动侦测模块
     log_i("initializing video detect...");
-    rtc::scoped_refptr<VideoDetectModule> video_detect_module = VideoDetectImpl::Create({Config::Instance()->detect.width,
-                                                                                         Config::Instance()->detect.height,
-                                                                                         Config::Instance()->detect.trigger_thresh});
+    rtc::scoped_refptr<VideoDetectModule> video_detect_module = VideoDetectImpl::Create({Config::Instance()->detect.trigger_thresh});
     NVR_CHECK(NULL != video_process_module)
 
     log_i("attach video detect to video process...");
@@ -103,16 +96,24 @@ int main(int argc, char **argv)
     rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
                                                                             Config::Instance()->video.width,
                                                                             Config::Instance()->video.height,
-                                                                            Config::Instance()->video.codec_type,
-                                                                            "1997.mp4"});
+                                                                            Config::Instance()->record.path,
+                                                                            Config::Instance()->record.segment_duration,
+                                                                            Config::Instance()->record.use_md,
+                                                                            Config::Instance()->record.md_duration});
     NVR_CHECK(NULL != record_module);
 
     log_i("attach record to video encode...");
     video_codec_module->AddVideoSink(record_module);
 
+    log_i("attact record to video detect...");
+    video_detect_module->AddListener(record_module);
+
     while (KRun)
         sleep(1000);
-        
+
+    log_i("detch record and video detect...");
+    video_detect_module->AddListener(nullptr);
+
     log_i("detch live/record and video encode...");
     video_codec_module->ClearVideoSink();
 

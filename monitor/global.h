@@ -89,6 +89,11 @@
 #define ALIGN 64                                     //默认内存对齐大小
 #define VB_POOLS_NUM 128                             //缓冲池数量
 #define VB_MEM_BLK_NUM 5                             //内存块数量(3516A100V内存不足,系统无法使用1080P)
+#define DETECT_WIDTH 720                             //检测通道宽度
+#define DETECT_HEIGHT 480                            //检测通道高度
+#define DETECT_MEM_BLK_NUM 1                         //检测模块内存块数
+#define RECORD_DIR_FORMAT "%Y_%m_%d"                 //录制目录名称(日期格式)
+#define RECORD_FILE_FORMAT "%H_%M_%S"                //录制文件名称(日期格式)
 
 #define NVR_ISP_DEV 0         //ISP设备
 #define NVR_VI_DEV 0          //VI设备

@@ -153,8 +153,8 @@ int32_t VideoProcessImpl::StartVPSSDetectChn(const Params &params)
     chn_mode.enChnMode = VPSS_CHN_MODE_USER;
     chn_mode.bDouble = HI_FALSE;
     chn_mode.enPixelFormat = PIXEL_FORMAT;
-    chn_mode.u32Width = params.detect_width;
-    chn_mode.u32Height = params.detect_height;
+    chn_mode.u32Width = DETECT_WIDTH;
+    chn_mode.u32Height = DETECT_HEIGHT;
     chn_mode.enCompressMode = COMPRESS_MODE_NONE;
 
     ret = HI_MPI_VPSS_SetChnMode(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &chn_mode);
@@ -204,7 +204,13 @@ void VideoProcessImpl::StartProcessThread(const Params &params)
                 log_e("HI_MPI_VPSS_GetChnFrame failed,code %#x", ret);
                 return;
             }
-            
+
+            if (HI_ERR_VPSS_BUF_EMPTY == ret)
+            {
+                log_w("HI_MPI_VPSS_GetChnFrame return HI_ERR_VPSS_BUF_EMPTY");
+                continue;
+            }
+
             mux_.lock();
             if (video_sink_)
                 video_sink_->OnFrame(frame_info);

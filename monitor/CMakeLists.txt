@@ -36,27 +36,13 @@ target_link_libraries(monitor
     lib_hiawb.so 
     lib_hiaf.so 
     lib_hidefog.so
-    #system
     pthread
     dl
     m
     #thirdparty
     libeasylogger.a
-    libSDL2_ttf.a
-    libSDL2.a 
-    libfreetype.a
-    libavformat.a
-    # libavdevice.a
-    libavcodec.a
-    libavutil.a
-    libavresample.a
-    libev.a
-    ${PROJECT_BINARY_DIR}/lib/srs_librtmp.a
-    # librtmp.a
     libmp4v2.a
-    libz.a
-    libssl.a
-    libcrypto.a
+    ${PROJECT_BINARY_DIR}/lib/srs_librtmp.a
     #self
     common
     video_capture

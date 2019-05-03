@@ -47,14 +47,24 @@ struct Config
     {
         Detect()
         {
-            width = 720;
-            height = 480;
-            trigger_thresh = 2;
+            trigger_thresh = 1;
         }
-
-        int32_t width;
-        int32_t height;
         int32_t trigger_thresh;
+    };
+    struct Record
+    {
+        Record()
+        {
+            segment_duration = 3600; //60mins
+            path = "/nfsroot/record/fuck1";
+            use_md = true;
+            md_duration = 10; //5mins
+        };
+
+        int32_t segment_duration;
+        std::string path;
+        bool use_md;
+        int32_t md_duration;
     };
 
     struct Rtmp
@@ -62,7 +72,7 @@ struct Config
         Rtmp()
         {
             // url = "rtmp://192.168.22.222:1935/live/test";
-              url = "rtmp://127.0.0.1:1935/live/test";
+            url = "rtmp://127.0.0.1:1935/live/test";
         }
 
         std::string url;
@@ -72,6 +82,7 @@ struct Config
     Video video;
     Detect detect;
     Rtmp rtmp;
+    Record record;
 
     static Config *Instance()
     {

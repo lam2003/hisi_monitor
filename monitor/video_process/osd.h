@@ -1,30 +1,30 @@
-#ifndef OSD_H_
-#define OSD_H_
+// #ifndef OSD_H_
+// #define OSD_H_
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+// #include <SDL2/SDL.h>
+// #include <SDL2/SDL_ttf.h>
 
-namespace nvr
-{
-class OSD
-{
-public:
-    static OSD *Instance();
+// namespace nvr
+// {
+// class OSD
+// {
+// public:
+//     static OSD *Instance();
 
-    ~OSD();
+//     ~OSD();
 
-    int32_t Initialize();
+//     int32_t Initialize();
 
-    void close();
+//     void close();
 
-private:
-    OSD();
+// private:
+//     OSD();
 
-private:
-    SDL_PixelFormat *fmt_;
-    TTF_Font *font_;
-    bool init_;
-};
-}; // namespace nvr
+// private:
+//     SDL_PixelFormat *fmt_;
+//     TTF_Font *font_;
+//     bool init_;
+// };
+// }; // namespace nvr
 
-#endif
+// #endif

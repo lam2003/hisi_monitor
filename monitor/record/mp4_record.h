@@ -7,6 +7,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 
 namespace nvr
@@ -22,15 +23,24 @@ public:
 
     void OnFrame(const VideoFrame &) override;
 
+    void OnTrigger(int32_t num) override;
+
 protected:
     MP4RecordImpl();
 
     ~MP4RecordImpl() override;
 
 private:
-    Buffer<> buffer_;
+    void RecordThread();
+    bool RecordNeedToQuit();
+    bool RecordNeedToSegment(uint64_t start_time);
+
+private:
     std::mutex mux_;
     std::condition_variable cond_;
+    Buffer<> buffer_;
+    Params params_;
+    std::atomic<uint64_t> end_time_;
     bool run_;
     std::unique_ptr<std::thread> thread_;
     bool init_;

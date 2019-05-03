@@ -20,6 +20,8 @@ int32_t System::InitMPP()
     vb_cfg.u32MaxPoolCnt = VB_POOLS_NUM;
     vb_cfg.astCommPool[0].u32BlkSize = CalcPicVbBlkSize(PIC_WIDTH, PIC_HEIGHT);
     vb_cfg.astCommPool[0].u32BlkCnt = VB_MEM_BLK_NUM;
+    vb_cfg.astCommPool[1].u32BlkSize = CalcPicVbBlkSize(DETECT_WIDTH, DETECT_HEIGHT);
+    vb_cfg.astCommPool[1].u32BlkCnt = DETECT_MEM_BLK_NUM;
 
     ret = HI_MPI_SYS_Exit();
     if (HI_SUCCESS != ret)
@@ -100,18 +102,12 @@ int32_t System::CalcPicVbBlkSize(int width, int height, int align)
     return vb_pic_header_size + ((align_width * align_height) * 3 >> 1);
 }
 
-uint64_t System::GetSteadyMicroSeconds()
+uint64_t System::GetSteadyMilliSeconds()
 {
     using namespace std::chrono;
     auto now = steady_clock::now();
     auto now_since_epoch = now.time_since_epoch();
-    return duration_cast<microseconds>(now_since_epoch).count();
-}
-
-void System::InitFFMPEG()
-{
-    av_register_all();
-    avformat_network_init();
+    return duration_cast<milliseconds>(now_since_epoch).count();
 }
 
 int32_t System::VIUnBindVPSS()
@@ -209,4 +205,37 @@ int32_t System::VPSSBindVENC()
 
     return static_cast<int>(KSuccess);
 }
+
+int32_t System::CreateDir(const std::string &path)
+{
+    size_t pos = 0;
+    while (true)
+    {
+        pos = path.find_first_of('/', pos);
+        std::string sub_str = path.substr(0, pos);
+        if (sub_str != "" && access(sub_str.c_str(), F_OK) != 0)
+        {
+            log_w("create dir %s", sub_str.c_str());
+            if (mkdir(sub_str.c_str(), 0777) != 0)
+            {
+                log_e("mkdir failed,%s", strerror(errno));
+                return static_cast<int>(KSystemError);
+            }
+        }
+        if (pos == std::string::npos)
+            break;
+        pos++;
+    }
+
+    return static_cast<int>(KSuccess);
+}
+
+std::string System::GetLocalTime(const std::string &format)
+{
+    time_t t = time(nullptr);
+    char buf[256];
+    strftime(buf, sizeof(buf), format.c_str(), localtime(&t));
+    return std::string(buf, strlen(buf));
+}
+
 } // namespace nvr

@@ -22,7 +22,7 @@ rtc::scoped_refptr<VideoDetectModule> VideoDetectImpl::Create(const Params &para
     return implemention;
 }
 
-int32_t VideoDetectImpl::StartMD(const Params &params)
+int32_t VideoDetectImpl::StartMD()
 {
     int32_t ret;
 
@@ -38,8 +38,8 @@ int32_t VideoDetectImpl::StartMD(const Params &params)
     attr.enSadMode = IVE_SAD_MODE_MB_4X4;
     attr.enSadOutCtrl = IVE_SAD_OUT_CTRL_THRESH;
     attr.u16SadThr = 200;
-    attr.u16Width = params.width;
-    attr.u16Height = params.height;
+    attr.u16Width = DETECT_WIDTH;
+    attr.u16Height = DETECT_HEIGHT;
     attr.stAddCtrl.u0q16X = 32768;
     attr.stAddCtrl.u0q16Y = 32768;
     attr.stCclCtrl.enMode = IVE_CCL_MODE_4C;
@@ -77,7 +77,6 @@ int32_t VideoDetectImpl::IVEDMAImage(const VIDEO_FRAME_INFO_S &frame_info, const
     IVE_DST_DATA_S dst_data;
     IVE_DMA_CTRL_S dma_ctrl = {IVE_DMA_MODE_DIRECT_COPY, 0};
     HI_BOOL finish = HI_FALSE;
-    HI_BOOL block = HI_TRUE;
 
     //fill src
     src_data.pu8VirAddr = (HI_U8 *)frame_info.stVFrame.pVirAddr[0];
@@ -102,11 +101,11 @@ int32_t VideoDetectImpl::IVEDMAImage(const VIDEO_FRAME_INFO_S &frame_info, const
 
     if (HI_TRUE == instant)
     {
-        ret = HI_MPI_IVE_Query(handle, &finish, block);
-        while (HI_ERR_IVE_QUERY_TIMEOUT == ret)
+        ret = HI_MPI_IVE_Query(handle, &finish, HI_TRUE);
+        while (!finish && HI_ERR_IVE_QUERY_TIMEOUT == ret)
         {
             usleep(100);
-            ret = HI_MPI_IVE_Query(handle, &finish, block);
+            ret = HI_MPI_IVE_Query(handle, &finish, HI_TRUE);
         }
         if (HI_SUCCESS != ret)
         {
@@ -118,17 +117,17 @@ int32_t VideoDetectImpl::IVEDMAImage(const VIDEO_FRAME_INFO_S &frame_info, const
     return static_cast<int>(KSuccess);
 }
 
-int32_t VideoDetectImpl::AllocMemory(const Params &params)
+int32_t VideoDetectImpl::AllocMemory()
 {
     int32_t ret;
     for (int i = 0; i < 2; i++)
     {
         memset(&src_image_[i], 0, sizeof(src_image_[i]));
         src_image_[i].enType = IVE_IMAGE_TYPE_U8C1;
-        src_image_[i].u16Width = params.width;
-        src_image_[i].u16Height = params.height;
-        src_image_[i].u16Stride[0] = System::Align(params.width, 16);
-        ret = HI_MPI_SYS_MmzAlloc(&src_image_[i].u32PhyAddr[0], (void **)&src_image_[i].pu8VirAddr[0], NULL, HI_NULL, src_image_[i].u16Stride[0] * params.height);
+        src_image_[i].u16Width = DETECT_WIDTH;
+        src_image_[i].u16Height = DETECT_HEIGHT;
+        src_image_[i].u16Stride[0] = System::Align(DETECT_WIDTH, 16);
+        ret = HI_MPI_SYS_MmzAlloc(&src_image_[i].u32PhyAddr[0], (void **)&src_image_[i].pu8VirAddr[0], NULL, HI_NULL, src_image_[i].u16Stride[0] * DETECT_HEIGHT);
         if (HI_SUCCESS != ret)
         {
             log_e("HI_MPI_SYS_MmzAlloc failed,code %#x,ret");
@@ -199,8 +198,11 @@ void VideoDetectImpl::OnFrame(const VIDEO_FRAME_INFO_S &frame)
     }
 
     ccbloc = (IVE_CCBLOB_S *)(dst_mem_info_.pu8VirAddr);
-    if (ccbloc->u8RegionNum > trigger_thresh_ && listener_)
+
+    mux_.lock();
+    if (ccbloc->u8RegionNum >= trigger_thresh_ && listener_)
         listener_->OnTrigger(ccbloc->u8RegionNum);
+    mux_.unlock();
 
     index_ = 1 - index_;
 }
@@ -212,11 +214,11 @@ int32_t VideoDetectImpl::Initialize(const Params &params)
 
     err_code code;
 
-    code = static_cast<err_code>(StartMD(params));
+    code = static_cast<err_code>(StartMD());
     if (KSuccess != code)
         return code;
 
-    code = static_cast<err_code>(AllocMemory(params));
+    code = static_cast<err_code>(AllocMemory());
     if (KSuccess != code)
         return code;
 
@@ -257,6 +259,8 @@ VideoDetectImpl::VideoDetectImpl() : trigger_thresh_(0),
 
 void VideoDetectImpl::AddListener(DetectListener *listener)
 {
+    mux_.lock();
     listener_ = listener;
+    mux_.unlock();
 }
 } // namespace nvr

@@ -15,8 +15,6 @@ public:
         int32_t frame_rate;
         int32_t encode_width;
         int32_t encode_height;
-        int32_t detect_width;
-        int32_t detect_height;
     };
 
     virtual int32_t Initialize(const Params &params) = 0;

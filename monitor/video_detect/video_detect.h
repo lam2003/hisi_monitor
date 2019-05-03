@@ -20,8 +20,6 @@ class VideoDetectModule : public rtc::RefCountInterface, public VideoSinkInterfa
 public:
     struct Params
     {
-        int32_t width;
-        int32_t height;
         int32_t trigger_thresh;
     };
 
