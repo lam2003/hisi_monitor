@@ -7,7 +7,7 @@
 - jsoncpp
 
 #### 编译方法:
-已经将交叉编译后的库上传到[https://github.com/lam2003/monitor_3rdparty.git](https://note.youdao.com/)
+已经将交叉编译后的库上传到[https://github.com/lam2003/monitor_3rdparty.git](https://github.com/lam2003/monitor_3rdparty.git)
 ```
 #安装交叉工具链arm-hisiv500-linux(uclib)
 #进入源码根目录
