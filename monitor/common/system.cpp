@@ -1,11 +1,6 @@
 #include "common/system.h"
 #include "common/res_code.h"
 
-extern "C"
-{
-#include "libavformat/avformat.h"
-}
-
 #include <chrono>
 
 namespace nvr

@@ -1,7 +1,8 @@
 #include "video_detect/video_detect_impl.h"
 #include "common/res_code.h"
 #include "common/system.h"
-#include "base/ref_counted_object.h"
+
+#include <base/ref_counted_object.h>
 
 namespace nvr
 {

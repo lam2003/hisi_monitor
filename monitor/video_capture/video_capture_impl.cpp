@@ -1,6 +1,7 @@
 #include "video_capture/video_capture_impl.h"
-#include "base/ref_counted_object.h"
 #include "common/res_code.h"
+
+#include <base/ref_counted_object.h>
 
 static combo_dev_attr_t COMBO_DEV_ATTR =
     {
@@ -125,7 +126,7 @@ rtc::scoped_refptr<VideoCaptureModule> VideoCaptureImpl::Create()
 
 int32_t VideoCaptureImpl::StartMIPI()
 {
-    //³õÊ¼»¯mipi(Mobile Idustry Processor Interface)
+    //ï¿½ï¿½Ê¼ï¿½ï¿½mipi(Mobile Idustry Processor Interface)
     int32_t fd = open("/dev/hi_mipi", O_RDWR);
     if (fd < 0)
     {
@@ -133,13 +134,13 @@ int32_t VideoCaptureImpl::StartMIPI()
         return static_cast<int>(KMPPError);
     }
 
-    //¿ªÊ¼ÅäÖÃmipi
+    //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½mipi
     ioctl(fd, HI_MIPI_RESET_MIPI, &COMBO_DEV_ATTR.devno);
 
-    //¿ªÊ¼ÅäÖÃ´«¸ÐÆ÷
+    //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½
     ioctl(fd, HI_MIPI_RESET_SENSOR, &COMBO_DEV_ATTR.devno);
 
-    //ÅäÖÃmipi
+    //ï¿½ï¿½ï¿½ï¿½mipi
     if (ioctl(fd, HI_MIPI_SET_DEV_ATTR, &COMBO_DEV_ATTR))
     {
         log_e("configure mipi failed,%s", strerror(errno));
@@ -148,10 +149,10 @@ int32_t VideoCaptureImpl::StartMIPI()
 
     usleep(10000); //10ms
 
-    //½áÊøÅäÖÃmipi
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mipi
     ioctl(fd, HI_MIPI_UNRESET_MIPI, &COMBO_DEV_ATTR.devno);
 
-    //½áÊøÅäÖÃ´«¸ÐÆ÷
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½
     ioctl(fd, HI_MIPI_UNRESET_SENSOR, &COMBO_DEV_ATTR.devno);
 
     ::close(fd);

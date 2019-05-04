@@ -1,10 +1,11 @@
 #ifndef LIVE_MODULE_H_
 #define LIVE_MODULE_H_
 
-#include "base/ref_count.h"
-#include "base/scoped_refptr.h"
 #include "video_codec/video_codec_define.h"
 #include "video/video_sink_interface.h"
+
+#include <base/ref_count.h>
+#include <base/scoped_refptr.h>
 
 #include <string>
 

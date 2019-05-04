@@ -42,8 +42,8 @@ target_link_libraries(monitor
     #thirdparty
     libeasylogger.a
     libmp4v2.a
-    ${PROJECT_BINARY_DIR}/lib/srs_librtmp.a
     libjsoncpp.a
+    ${PROJECT_BINARY_DIR}/lib/srs_librtmp.a
     #self
     common
     video_capture

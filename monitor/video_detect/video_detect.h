@@ -1,10 +1,11 @@
 #ifndef VIDEO_DETECT_MODULE_H_
 #define VIDEO_DETECT_MODULE_H_
 
-#include "base/scoped_refptr.h"
-#include "base/ref_count.h"
 #include "video/video_sink_interface.h"
 #include "video/video_frame.h"
+
+#include <base/scoped_refptr.h>
+#include <base/ref_count.h>
 
 namespace nvr
 {

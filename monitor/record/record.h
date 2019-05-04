@@ -1,13 +1,14 @@
 #ifndef RECORD_MODULE_H_
 #define RECORD_MODULE_H_
 
-#include "base/ref_count.h"
-#include "base/scoped_refptr.h"
 #include "video_codec/video_codec_define.h"
 #include "video/video_sink_interface.h"
 #include "video_detect/video_detect.h"
 
 #include <string>
+
+#include <base/ref_count.h>
+#include <base/scoped_refptr.h>
 
 namespace nvr
 {

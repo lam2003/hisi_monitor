@@ -1,8 +1,8 @@
 #ifndef VIDEO_CAPTRUE_MODULE_H_
 #define VIDEO_CAPTURE_MODULE_H_
 
-#include "base/scoped_refptr.h"
-#include "base/ref_count.h"
+#include <base/scoped_refptr.h>
+#include <base/ref_count.h>
 
 namespace nvr
 {
