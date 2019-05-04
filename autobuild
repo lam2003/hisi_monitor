@@ -1,4 +1,0 @@
-cd ./build
-make
-cd ../
-cp ./build/bin/monitor /hisi_data/ 
