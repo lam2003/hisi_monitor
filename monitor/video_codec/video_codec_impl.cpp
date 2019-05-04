@@ -143,9 +143,7 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
 
         VENC_STREAM_S stream;
         VENC_CHN_STAT_S chn_stat;
-
-        prctl(PR_SET_NAME, "venc_thread", 0, 0, 0);
-
+        
         int32_t fd = HI_MPI_VENC_GetFd(NVR_VENC_CHN);
         if (fd < 0)
         {

@@ -54,7 +54,8 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
             std::unique_lock<std::mutex> lock(mux_);
             while (run_ && !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
                 cond_.wait(lock);
-
+            printf("###############\n");
+            printf("consume:%d\n", sizeof(frame));
             if (run_)
             {
                 frame.data = buffer_.GetCurrentPos();
@@ -72,6 +73,7 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
                     log_e("consme data from buffer failed,rest data not enough");
                     return;
                 }
+                printf("consume:%d\n", frame.len);
             }
         }
 
@@ -94,9 +96,11 @@ void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
         mux_.unlock();
         return;
     }
-
+    printf("###############\n");
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
+    printf("append:%d\n", sizeof(frame));
     buffer_.Append(frame.data, frame.len);
+    printf("append:%d\n", frame.len);
     cond_.notify_one();
     mux_.unlock();
 }

@@ -24,6 +24,11 @@ void signal_handler(int signo)
         log_w("recevice SIGINT,quit process");
         KRun = false;
     }
+    else if (signo == SIGTERM)
+    {
+        log_w("recevice SIGTERM,quit process");
+        KRun = false;
+    }
     else if (signo == SIGPIPE)
     {
         log_w("recevice SIGPIPE");
@@ -41,6 +46,7 @@ int main(int argc, char **argv)
     //初始化信号处理函数
     signal(SIGINT, signal_handler);
     signal(SIGPIPE, signal_handler);
+    signal(SIGTERM, signal_handler);
 
     //读取配置文件
     int opt;
