@@ -1,0 +1,23 @@
+{
+    "video": {
+        "frame_rate": 25,
+        "width": 1280,
+        "height": 720,
+        "codec_mode": "CBR",
+        "codec_profile": 2,
+        "codec_bitrate": 2048
+    },
+    "detect": {
+        "trigger_thresh": 1
+    },
+    "record":{
+        "segment_duration":3600,
+        "path":"/nfs/record",
+        "use_md": true,
+        "md_duration" : 60
+    },
+    "rtmp":{
+        "url":"rtmp://127.0.0.1:1935/live/test"
+    }
+
+}

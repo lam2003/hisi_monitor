@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <getopt.h>
 //logger
 #include <elog.h>
 //hisi sdk

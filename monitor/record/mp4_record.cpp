@@ -43,7 +43,6 @@ bool MP4RecordImpl::RecordNeedToSegment(uint64_t start_time)
 
 void MP4RecordImpl::OnTrigger(int32_t num)
 {
-    printf("num:%d\n", num);
     end_time_ = System::GetSteadyMilliSeconds() + (params_.md_duration * 1000);
 }
 
@@ -138,7 +137,6 @@ int32_t MP4RecordImpl::Initialize(const Params &params)
     if (init_)
         return static_cast<int>(KDupInitialize);
 
-
     params_ = params;
     run_ = true;
     thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
@@ -154,13 +152,17 @@ void MP4RecordImpl::OnFrame(const VideoFrame &frame)
     if (!init_)
         return;
 
-    std::unique_lock<std::mutex> lock(mux_);
+    mux_.lock();
     if (buffer_.FreeSpace() < sizeof(frame) + frame.len)
+    {
+        mux_.unlock();
         return;
+    }
 
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
     buffer_.Append(frame.data, frame.len);
     cond_.notify_one();
+    mux_.unlock();
 }
 
 void MP4RecordImpl::Close()

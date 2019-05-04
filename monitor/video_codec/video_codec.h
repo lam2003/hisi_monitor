@@ -17,7 +17,6 @@ public:
     int32_t frame_rate;
     int32_t width;
     int32_t height;
-    VideoCodecType codec_type;
     VideoCodecMode codec_mode;
     int32_t profile;
     int32_t bitrate;

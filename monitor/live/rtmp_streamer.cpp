@@ -59,7 +59,7 @@ int32_t RTMPStreamer::WriteVideoFrame(const VideoFrame &frame)
             ret != ERROR_H264_DUPLICATED_SPS &&
             ret != ERROR_H264_DUPLICATED_PPS)
         {
-            log_e("srs_h264_write_raw_frames failed,code %d", ret);
+            log_w("srs_h264_write_raw_frames failed,code %d", ret);
             return static_cast<int>(KThirdPartyError);
         }
     }

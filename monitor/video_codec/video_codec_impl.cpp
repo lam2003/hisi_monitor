@@ -31,152 +31,73 @@ int32_t VideoCodecImpl::StartVENCChn(const Params &params)
 
     VENC_CHN_ATTR_S chn_attr;
     memset(&chn_attr, 0, sizeof(chn_attr));
-    if (params.codec_type == H264)
+
+    chn_attr.stVeAttr.enType = PT_H264;
+
+    VENC_ATTR_H264_S h264_attr;
+    memset(&h264_attr, 0, sizeof(h264_attr));
+
+    h264_attr.u32MaxPicWidth = PIC_WIDTH;
+    h264_attr.u32MaxPicHeight = PIC_HEIGHT;
+    h264_attr.u32PicWidth = params.width;
+    h264_attr.u32PicHeight = params.height;
+    h264_attr.u32BufSize = params.width * params.height * 2;
+    h264_attr.u32Profile = params.profile;
+    h264_attr.bByFrame = HI_FALSE;
+
+    memcpy(&chn_attr.stVeAttr.stAttrH264e, &h264_attr, sizeof(h264_attr));
+    if (params.codec_mode == CBR)
     {
-        chn_attr.stVeAttr.enType = PT_H264;
+        chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;
 
-        VENC_ATTR_H264_S h264_attr;
-        memset(&h264_attr, 0, sizeof(h264_attr));
+        VENC_ATTR_H264_CBR_S h264_cbr;
+        memset(&h264_cbr, 0, sizeof(h264_cbr));
 
-        h264_attr.u32MaxPicWidth = PIC_WIDTH;
-        h264_attr.u32MaxPicHeight = PIC_HEIGHT;
-        h264_attr.u32PicWidth = params.width;
-        h264_attr.u32PicHeight = params.height;
-        h264_attr.u32BufSize = params.width * params.height * 2;
-        h264_attr.u32Profile = params.profile;
-        h264_attr.bByFrame = HI_FALSE;
+        h264_cbr.u32Gop = params.frame_rate;
+        h264_cbr.u32StatTime = 1;
+        h264_cbr.u32SrcFrmRate = params.frame_rate;
+        h264_cbr.fr32DstFrmRate = params.frame_rate;
+        h264_cbr.u32BitRate = params.bitrate;
+        h264_cbr.u32FluctuateLevel = 1;
 
-        memcpy(&chn_attr.stVeAttr.stAttrH264e, &h264_attr, sizeof(h264_attr));
-        if (params.codec_mode == CBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;
-
-            VENC_ATTR_H264_CBR_S h264_cbr;
-            memset(&h264_cbr, 0, sizeof(h264_cbr));
-
-            h264_cbr.u32Gop = params.frame_rate;
-            h264_cbr.u32StatTime = 1;
-            h264_cbr.u32SrcFrmRate = params.frame_rate;
-            h264_cbr.fr32DstFrmRate = params.frame_rate;
-            h264_cbr.u32BitRate = params.bitrate;
-            h264_cbr.u32FluctuateLevel = 1;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH264Cbr, &h264_cbr, sizeof(h264_cbr));
-        }
-        else if (params.codec_mode == VBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264VBR;
-
-            VENC_ATTR_H264_VBR_S h264_vbr;
-            memset(&h264_vbr, 0, sizeof(h264_vbr));
-
-            h264_vbr.u32Gop = params.frame_rate;
-            h264_vbr.u32StatTime = 1;
-            h264_vbr.u32SrcFrmRate = params.frame_rate;
-            h264_vbr.fr32DstFrmRate = params.frame_rate;
-            h264_vbr.u32MinQp = 10;
-            h264_vbr.u32MinIQp = 10;
-            h264_vbr.u32MaxQp = 40;
-            h264_vbr.u32MaxBitRate = params.bitrate;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH264Vbr, &h264_vbr, sizeof(h264_vbr));
-        }
-        else if (params.codec_mode == AVBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264AVBR;
-
-            VENC_ATTR_H264_AVBR_S h264_avbr;
-            memset(&h264_avbr, 0, sizeof(h264_avbr));
-
-            h264_avbr.u32Gop = params.frame_rate;
-            h264_avbr.u32StatTime = 1;
-            h264_avbr.u32SrcFrmRate = params.frame_rate;
-            h264_avbr.fr32DstFrmRate = params.frame_rate;
-            h264_avbr.u32MaxBitRate = params.bitrate;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH264AVbr, &h264_avbr, sizeof(h264_avbr));
-        }
-        else
-        {
-            log_e("unsupport codec mode:%d", static_cast<int>(params.codec_mode));
-            return static_cast<int>(KMPPError);
-        }
+        memcpy(&chn_attr.stRcAttr.stAttrH264Cbr, &h264_cbr, sizeof(h264_cbr));
     }
-    else if (params.codec_type == H265)
+    else if (params.codec_mode == VBR)
     {
-        chn_attr.stVeAttr.enType = PT_H265;
+        chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264VBR;
 
-        VENC_ATTR_H265_S h265_attr;
-        memset(&h265_attr, 0, sizeof(h265_attr));
+        VENC_ATTR_H264_VBR_S h264_vbr;
+        memset(&h264_vbr, 0, sizeof(h264_vbr));
 
-        h265_attr.u32MaxPicWidth = PIC_WIDTH;
-        h265_attr.u32MaxPicHeight = PIC_HEIGHT;
-        h265_attr.u32PicWidth = params.width;
-        h265_attr.u32PicHeight = params.height;
-        h265_attr.u32BufSize = params.width * params.height * 2;
-        h265_attr.u32Profile = params.profile;
-        h265_attr.bByFrame = HI_FALSE;
+        h264_vbr.u32Gop = params.frame_rate;
+        h264_vbr.u32StatTime = 1;
+        h264_vbr.u32SrcFrmRate = params.frame_rate;
+        h264_vbr.fr32DstFrmRate = params.frame_rate;
+        h264_vbr.u32MinQp = 10;
+        h264_vbr.u32MinIQp = 10;
+        h264_vbr.u32MaxQp = 40;
+        h264_vbr.u32MaxBitRate = params.bitrate;
 
-        memcpy(&chn_attr.stVeAttr.stAttrH265e, &h265_attr, sizeof(h265_attr));
+        memcpy(&chn_attr.stRcAttr.stAttrH264Vbr, &h264_vbr, sizeof(h264_vbr));
+    }
+    else if (params.codec_mode == AVBR)
+    {
+        chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H264AVBR;
 
-        if (params.codec_mode == CBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H265CBR;
+        VENC_ATTR_H264_AVBR_S h264_avbr;
+        memset(&h264_avbr, 0, sizeof(h264_avbr));
 
-            VENC_ATTR_H265_CBR_S h265_cbr;
-            memset(&h265_cbr, 0, sizeof(h265_cbr));
+        h264_avbr.u32Gop = params.frame_rate;
+        h264_avbr.u32StatTime = 1;
+        h264_avbr.u32SrcFrmRate = params.frame_rate;
+        h264_avbr.fr32DstFrmRate = params.frame_rate;
+        h264_avbr.u32MaxBitRate = params.bitrate;
 
-            h265_cbr.u32Gop = params.frame_rate;
-            h265_cbr.u32StatTime = 1;
-            h265_cbr.u32SrcFrmRate = params.frame_rate;
-            h265_cbr.fr32DstFrmRate = params.frame_rate;
-            h265_cbr.u32BitRate = params.bitrate;
-            h265_cbr.u32FluctuateLevel = 1;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH265Cbr, &h265_cbr, sizeof(h265_cbr));
-        }
-        else if (params.codec_mode == VBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H265VBR;
-
-            VENC_ATTR_H265_VBR_S h265_vbr;
-            memset(&h265_vbr, 0, sizeof(h265_vbr));
-
-            h265_vbr.u32Gop = params.frame_rate;
-            h265_vbr.u32StatTime = 1;
-            h265_vbr.u32SrcFrmRate = params.frame_rate;
-            h265_vbr.fr32DstFrmRate = params.frame_rate;
-            h265_vbr.u32MinQp = 10;
-            h265_vbr.u32MinIQp = 10;
-            h265_vbr.u32MaxQp = 40;
-            h265_vbr.u32MaxBitRate = params.bitrate;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH265Vbr, &h265_vbr, sizeof(h265_vbr));
-        }
-        else if (params.codec_mode == AVBR)
-        {
-            chn_attr.stRcAttr.enRcMode = VENC_RC_MODE_H265AVBR;
-
-            VENC_ATTR_H265_AVBR_S h265_avbr;
-            memset(&h265_avbr, 0, sizeof(h265_avbr));
-
-            h265_avbr.u32Gop = params.frame_rate;
-            h265_avbr.u32StatTime = 1;
-            h265_avbr.u32SrcFrmRate = params.frame_rate;
-            h265_avbr.fr32DstFrmRate = params.frame_rate;
-            h265_avbr.u32MaxBitRate = params.bitrate;
-
-            memcpy(&chn_attr.stRcAttr.stAttrH264AVbr, &h265_avbr, sizeof(h265_avbr));
-        }
-        else
-        {
-            log_e("unsupport codec mode:%d", static_cast<int>(params.codec_mode));
-            return static_cast<int>(KMPPError);
-        }
+        memcpy(&chn_attr.stRcAttr.stAttrH264AVbr, &h264_avbr, sizeof(h264_avbr));
     }
     else
     {
-        log_e("unsupport codec type:%d", static_cast<int>(params.codec_type));
+        log_e("unsupport codec mode:%d", static_cast<int>(params.codec_mode));
         return static_cast<int>(KMPPError);
     }
 
@@ -298,37 +219,18 @@ void VideoCodecImpl::StartGetStreamThread(const Params &params)
                     return;
                 }
 
-                if (params.codec_type == H264)
+                for (uint32_t i = 0; i < stream.u32PackCount; i++)
                 {
-                    for (uint32_t i = 0; i < stream.u32PackCount; i++)
-                    {
 
-                        H264Frame frame;
-                        //判断h264帧类型 stream.pstPack[i].pu8Addr[4] & 0x1f
-                        frame.type = static_cast<int>(stream.pstPack[i].DataType.enH264EType);
-                        frame.data = stream.pstPack[i].pu8Addr;
-                        frame.len = stream.pstPack[i].u32Len;
-                        frame.ts = stream.pstPack[i].u64PTS;
-                        for (size_t j = 0; j < video_sinks_.size(); j++)
-                            video_sinks_[j]->OnFrame(frame);
-                    }
+                    H264Frame frame;
+                    frame.type = static_cast<int>(stream.pstPack[i].DataType.enH264EType);
+                    frame.data = stream.pstPack[i].pu8Addr;
+                    frame.len = stream.pstPack[i].u32Len;
+                    frame.ts = stream.pstPack[i].u64PTS;
+                    for (size_t j = 0; j < video_sinks_.size(); j++)
+                        video_sinks_[j]->OnFrame(frame);
                 }
-                else if (params.codec_type == H265)
-                {
-                    for (uint32_t i = 0; i < stream.u32PackCount; i++)
-                    {
-                        H265Frame frame;
-                        //判断h265帧类型 (stream.pstPack[i].pu8Addr[4] & 0x7E) >> 1
-                        frame.type = static_cast<int>(stream.pstPack[i].DataType.enH265EType);
-                        frame.data = stream.pstPack[i].pu8Addr;
-                        frame.len = stream.pstPack[i].u32Len;
-                        frame.ts = stream.pstPack[i].u64PTS;
-                        std::unique_lock<std::mutex> lock(mux_);
-                        for (size_t j = 0; j < video_sinks_.size(); j++)
-                            video_sinks_[j]->OnFrame(frame);
-                    }
-                }
- 
+
                 ret = HI_MPI_VENC_ReleaseStream(NVR_VENC_CHN, &stream);
                 if (HI_SUCCESS != ret)
                 {

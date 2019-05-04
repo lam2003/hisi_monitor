@@ -10,6 +10,11 @@
 
 using namespace nvr;
 
+static const char *KOpts = "c:";
+struct option KLongOpts[] = {
+    {"config", 1, NULL, 'c'},
+    {0, 0, 0, 0}};
+
 static bool KRun = true;
 
 void signal_handler(int signo)
@@ -36,6 +41,22 @@ int main(int argc, char **argv)
     //初始化信号处理函数
     signal(SIGINT, signal_handler);
     signal(SIGPIPE, signal_handler);
+
+    //读取配置文件
+    int opt;
+    while ((opt = getopt_long(argc, argv, KOpts, KLongOpts, NULL)) != -1)
+    {
+        switch (opt)
+        {
+        case 'c':
+        {
+            log_w("using config file %s", optarg);
+            code = static_cast<err_code>(Config::Instance()->ReadConfigFile(optarg));
+            CHACK_ERROR(code)
+            break;
+        }
+        }
+    }
 
     //初始化海思sdk
     log_i("initializing mpp...");
@@ -74,7 +95,6 @@ int main(int argc, char **argv)
     rtc::scoped_refptr<VideoCodecModule> video_codec_module = VideoCodecImpl::Create({Config::Instance()->video.frame_rate,
                                                                                       Config::Instance()->video.width,
                                                                                       Config::Instance()->video.height,
-                                                                                      Config::Instance()->video.codec_type,
                                                                                       Config::Instance()->video.codec_mode,
                                                                                       Config::Instance()->video.codec_profile,
                                                                                       Config::Instance()->video.codec_bitrate});
@@ -84,13 +104,13 @@ int main(int argc, char **argv)
     code = static_cast<err_code>(System::VPSSBindVENC());
     CHACK_ERROR(code)
 
-    //初始化直播
-    // log_i("initializing live...");
-    // rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->rtmp.url});
-    // NVR_CHECK(NULL != live_module);
+    // 初始化直播
+    log_i("initializing live...");
+    rtc::scoped_refptr<LiveModule> live_module = RtmpLiveImpl::Create({Config::Instance()->rtmp.url});
+    NVR_CHECK(NULL != live_module);
 
-    // log_i("attach live to video encode...");
-    // video_codec_module->AddVideoSink(live_module);
+    log_i("attach live to video encode...");
+    video_codec_module->AddVideoSink(live_module);
 
     log_i("initializing record...");
     rtc::scoped_refptr<RecordModule> record_module = MP4RecordImpl::Create({Config::Instance()->video.frame_rate,
@@ -120,8 +140,8 @@ int main(int argc, char **argv)
     log_i("closing record...");
     record_module->Close();
 
-    // log_i("closing live...");
-    // live_module->Close();
+    log_i("closing live...");
+    live_module->Close();
 
     log_i("unbinding video process and video encode...");
     System::VPSSUnBindVENC();

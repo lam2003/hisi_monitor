@@ -7,9 +7,7 @@ namespace nvr
 struct VideoFrame
 {
   virtual ~VideoFrame() = default;
-
-  virtual int32_t GetCodecType() const { return 0; }
-
+  
   uint8_t *data;
 
   uint32_t len;

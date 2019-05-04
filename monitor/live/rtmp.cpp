@@ -53,7 +53,6 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
             std::unique_lock<std::mutex> lock(mux_);
             while (run_ && !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
                 cond_.wait(lock);
-            
 
             if (run_)
             {
@@ -87,14 +86,18 @@ void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
     if (!init_)
         return;
 
-    std::unique_lock<std::mutex>(mux_);
+    mux_.lock();
 
     if (buffer_.FreeSpace() < sizeof(frame) + frame.len)
+    {
+        mux_.unlock();
         return;
+    }
 
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
     buffer_.Append(frame.data, frame.len);
     cond_.notify_one();
+    mux_.unlock();
 }
 
 void RtmpLiveImpl::Close()

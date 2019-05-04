@@ -8,17 +8,6 @@ namespace nvr
 {
 struct Config
 {
-    struct System
-    {
-        System()
-        {
-            font_path = "/nfsroot/msyh.ttc";
-            font_size = 32;
-        }
-
-        std::string font_path;
-        int32_t font_size;
-    };
     struct Video
     {
         Video()
@@ -26,18 +15,14 @@ struct Config
             frame_rate = 25;
             width = 1280;
             height = 720;
-            codec_type = H264;
             codec_mode = CBR;
-            codec_profile = 2;
-            codec_bitrate = 2048; //k
+            codec_profile = 0;
+            codec_bitrate = 2000; 
         }
-        //common
+  
         int32_t frame_rate;
         int32_t width;
         int32_t height;
-
-        //codec configure
-        VideoCodecType codec_type;
         VideoCodecMode codec_mode;
         int32_t codec_profile;
         int32_t codec_bitrate;
@@ -55,10 +40,10 @@ struct Config
     {
         Record()
         {
-            segment_duration = 3600; //60mins
-            path = "/nfsroot/record/fuck1";
+            segment_duration = 3600; //second
+            path = "/app/record";
             use_md = true;
-            md_duration = 10; //5mins
+            md_duration = 60; //second
         };
 
         int32_t segment_duration;
@@ -71,14 +56,12 @@ struct Config
     {
         Rtmp()
         {
-            // url = "rtmp://192.168.22.222:1935/live/test";
-            url = "rtmp://127.0.0.1:1935/live/test";
+            url = "rtmp://127.0.0.1:1935/live/monitor";
         }
 
         std::string url;
     };
 
-    System system;
     Video video;
     Detect detect;
     Rtmp rtmp;
@@ -89,6 +72,10 @@ struct Config
         static Config *instance = new Config;
         return instance;
     }
+
+    int32_t ReadConfigFile(const std::string &config_file);
+    
+    
 };
 } // namespace nvr
 
