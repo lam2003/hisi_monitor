@@ -61,7 +61,7 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
                     wait_sps = false;
 
                 frame.data = buffer_.GetCurrentPos();
-                if (!wait_sps)
+                if (init && !wait_sps)
                 {
                     code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
                     if (KSuccess != code)

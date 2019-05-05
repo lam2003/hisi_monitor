@@ -42,7 +42,7 @@ int32_t VideoCodecImpl::StartVENCChn(const Params &params)
     h264_attr.u32MaxPicHeight = PIC_HEIGHT;
     h264_attr.u32PicWidth = params.width;
     h264_attr.u32PicHeight = params.height;
-    h264_attr.u32BufSize = params.width * params.height * 2;
+    h264_attr.u32BufSize = PIC_WIDTH * PIC_HEIGHT * 2;
     h264_attr.u32Profile = params.profile;
     h264_attr.bByFrame = HI_FALSE;
 
