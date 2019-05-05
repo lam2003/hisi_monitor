@@ -34,6 +34,7 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
         err_code code;
         RTMPStreamer rtmp_streamer;
         VideoFrame frame;
+        bool wait_sps;
 
         bool init = false;
 
@@ -42,6 +43,8 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
 
             if (!init)
             {
+                wait_sps = true;
+                buffer_.Clear();
                 code = static_cast<err_code>(rtmp_streamer.Initialize(params.url));
                 if (KSuccess != code)
                 {
@@ -52,29 +55,31 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
             }
 
             std::unique_lock<std::mutex> lock(mux_);
-            while (run_ && !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
-                cond_.wait(lock);
-            printf("###############\n");
-            printf("consume:%d\n", sizeof(frame));
-            if (run_)
+            while (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
             {
+                if (frame.type == H264Frame::NaluType::SPS)
+                    wait_sps = false;
+
                 frame.data = buffer_.GetCurrentPos();
-                code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
-                if (KSuccess != code)
+                if (!wait_sps)
                 {
-                    log_w("rtmp connection break,try to reconnect...");
-                    rtmp_streamer.Close();
-                    buffer_.Clear();
-                    init = false;
-                    continue;
+                    code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
+                    if (KSuccess != code)
+                    {
+                        log_w("rtmp connection break,try to reconnect...");
+                        rtmp_streamer.Close();
+                        init = false;
+                    }
                 }
                 if (!buffer_.Consume(frame.len))
                 {
                     log_e("consme data from buffer failed,rest data not enough");
                     return;
                 }
-                printf("consume:%d\n", frame.len);
             }
+
+            if (run_ && init)
+                cond_.wait(lock);
         }
 
         rtmp_streamer.Close();
@@ -96,11 +101,8 @@ void RtmpLiveImpl::OnFrame(const VideoFrame &frame)
         mux_.unlock();
         return;
     }
-    printf("###############\n");
     buffer_.Append((uint8_t *)&frame, sizeof(frame));
-    printf("append:%d\n", sizeof(frame));
     buffer_.Append(frame.data, frame.len);
-    printf("append:%d\n", frame.len);
     cond_.notify_one();
     mux_.unlock();
 }

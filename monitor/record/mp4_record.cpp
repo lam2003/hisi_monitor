@@ -7,8 +7,6 @@
 
 #include <base/ref_counted_object.h>
 
-
-
 namespace nvr
 {
 
@@ -56,6 +54,7 @@ void MP4RecordImpl::RecordThread()
     VideoFrame frame;
     uint64_t now;
     uint64_t start_time;
+    bool wait_sps;
     bool init = false;
 
     now = System::GetSteadyMilliSeconds();
@@ -91,27 +90,28 @@ void MP4RecordImpl::RecordThread()
             mux_.lock();
             buffer_.Clear();
             mux_.unlock();
+            wait_sps = true;
             init = true;
         }
 
         std::unique_lock<std::mutex> lock(mux_);
-        while (run_ &&
-               !RecordNeedToQuit() &&
-               !RecordNeedToSegment(start_time) &&
-               !buffer_.Get((uint8_t *)&frame, sizeof(frame)))
-            cond_.wait(lock);
-
-        if (run_ &&
-            !RecordNeedToQuit() &&
-            !RecordNeedToSegment(start_time))
+        while (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
         {
+            if (frame.type == H264Frame::NaluType::SPS)
+                wait_sps = false;
+
             frame.data = buffer_.GetCurrentPos();
-            code = static_cast<err_code>(muxer.WriteVideoFrame(frame));
-            if (KSuccess != code)
+
+            if (!wait_sps)
             {
-                log_e("error:%s", make_error_code(code).message().c_str());
-                return;
+                code = static_cast<err_code>(muxer.WriteVideoFrame(frame));
+                if (KSuccess != code)
+                {
+                    log_e("error:%s", make_error_code(code).message().c_str());
+                    return;
+                }
             }
+
             if (!buffer_.Consume(frame.len))
             {
                 log_e("buffer rest data not enough");
@@ -125,12 +125,15 @@ void MP4RecordImpl::RecordThread()
             init = false;
             while (run_ && RecordNeedToQuit())
                 usleep(500000); //500ms
-                }
+        }
         else if (RecordNeedToSegment(start_time))
         {
             muxer.Close();
             init = false;
         }
+
+        if (run_ && init_)
+            cond_.wait(lock);
     }
     muxer.Close();
 }
