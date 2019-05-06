@@ -86,10 +86,6 @@ void MP4RecordImpl::RecordThread()
             }
 
             start_time = System::GetSteadyMilliSeconds();
-
-            mux_.lock();
-            buffer_.Clear();
-            mux_.unlock();
             wait_sps = true;
             init = true;
         }

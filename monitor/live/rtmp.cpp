@@ -44,7 +44,6 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
             if (!init)
             {
                 wait_sps = true;
-                buffer_.Clear();
                 code = static_cast<err_code>(rtmp_streamer.Initialize(params.url));
                 if (KSuccess != code)
                 {
