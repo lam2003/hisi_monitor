@@ -21,9 +21,9 @@ struct default_block_allocator_malloc_free
     }
 };
 
-typedef default_block_allocator_malloc_free<256 * 1024> default_allocator;
+typedef default_block_allocator_malloc_free<BUFFER_LEN> default_allocator;
 
-template <typename BlockAllocator = default_allocator> //max 1MB
+template <typename BlockAllocator = default_allocator> //max 512K
 class Buffer
 {
 public:

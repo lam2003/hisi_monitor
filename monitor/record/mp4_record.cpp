@@ -49,54 +49,88 @@ void MP4RecordImpl::OnTrigger(int32_t num)
 
 void MP4RecordImpl::RecordThread()
 {
-    err_code code;
-    MP4Muxer muxer;
-    VideoFrame frame;
-    uint64_t now;
-    uint64_t start_time;
-    bool wait_sps;
-    bool init = false;
+}
 
-    now = System::GetSteadyMilliSeconds();
-    while (run_ && RecordNeedToQuit())
-        usleep(500000); //500ms
+int32_t MP4RecordImpl::Initialize(const Params &params)
+{
+    if (init_)
+        return static_cast<int>(KDupInitialize);
 
-    while (run_)
-    {
-        if (!init)
+    params_ = params;
+    run_ = true;
+    thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
+        err_code code;
+        MP4Muxer muxer;
+        VideoFrame frame;
+        uint64_t now;
+        uint64_t start_time;
+        bool wait_sps;
+
+        bool init = false;
+        uint8_t *temp_buf = (uint8_t *)malloc(BUFFER_LEN);
+        if (!temp_buf)
         {
-            std::string path;
-            {
-                //创建文件夹,按日期创建
-                std::ostringstream oss;
-                oss << params_.path << '/' << System::GetLocalTime(RECORD_DIR_FORMAT);
-                path = oss.str();
-                code = static_cast<err_code>(System::CreateDir(path));
-                if (KSuccess != code)
-                    return;
-            }
-
-            std::ostringstream oss;
-            oss << path << '/' << "record_" << System::GetLocalTime(RECORD_FILE_FORMAT) << ".mp4";
-            code = static_cast<err_code>(muxer.Initialize(oss.str().c_str(), params_.width, params_.height, params_.frame_rate));
-            if (KSuccess != code)
-            {
-                log_e("error:%s", make_error_code(code).message().c_str());
-                return;
-            }
-
-            start_time = System::GetSteadyMilliSeconds();
-            wait_sps = true;
-            init = true;
+            log_e("malloc buffer failed");
+            return;
         }
 
-        std::unique_lock<std::mutex> lock(mux_);
-        while (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
+        now = System::GetSteadyMilliSeconds();
+        while (run_ && RecordNeedToQuit())
+            usleep(500000); //500ms
+
+        while (run_)
         {
+            if (!init)
+            {
+                std::string path;
+                {
+                    //创建文件夹,按日期创建
+                    std::ostringstream oss;
+                    oss << params_.path << '/' << System::GetLocalTime(RECORD_DIR_FORMAT);
+                    path = oss.str();
+                    code = static_cast<err_code>(System::CreateDir(path));
+                    if (KSuccess != code)
+                        return;
+                }
+                std::ostringstream oss;
+                oss << path << '/' << "record_" << System::GetLocalTime(RECORD_FILE_FORMAT) << ".mp4";
+                code = static_cast<err_code>(muxer.Initialize(oss.str().c_str(), params_.width, params_.height, params_.frame_rate));
+                if (KSuccess != code)
+                {
+                    log_e("error:%s", make_error_code(code).message().c_str());
+                    return;
+                }
+
+                mux_.lock();
+                buffer_.Clear();
+                mux_.unlock();
+
+                start_time = System::GetSteadyMilliSeconds();
+                wait_sps = true;
+                init = true;
+            }
+
+            {
+                std::unique_lock<std::mutex> lock(mux_);
+                if (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
+                {
+                    memcpy(temp_buf, buffer_.GetCurrentPos(), frame.len);
+                    frame.data = temp_buf;
+                    if (!buffer_.Consume(frame.len))
+                    {
+                        log_e("consme data from buffer failed,rest data not enough");
+                        return;
+                    }
+                }
+                else if (run_)
+                {
+                    cond_.wait(lock);
+                    continue;
+                }
+            }
+
             if (frame.type == H264Frame::NaluType::SPS)
                 wait_sps = false;
-
-            frame.data = buffer_.GetCurrentPos();
 
             if (!wait_sps)
             {
@@ -108,44 +142,21 @@ void MP4RecordImpl::RecordThread()
                 }
             }
 
-            if (!buffer_.Consume(frame.len))
+            if (RecordNeedToQuit())
             {
-                log_e("buffer rest data not enough");
-                return;
+                muxer.Close();
+                init = false;
+                while (run_ && RecordNeedToQuit())
+                    usleep(500000); //500ms
+            }
+            else if (RecordNeedToSegment(start_time))
+            {
+                muxer.Close();
+                init = false;
             }
         }
-
-        if (RecordNeedToQuit())
-        {
-            lock.unlock();
-            muxer.Close();
-            init = false;
-            while (run_ && RecordNeedToQuit())
-                usleep(500000); //500ms
-        }
-        else if (RecordNeedToSegment(start_time))
-        {
-            lock.unlock();
-            muxer.Close();
-            init = false;
-        }
-        else if (run_)
-        {
-            cond_.wait(lock);
-        }
-    }
-    muxer.Close();
-}
-
-int32_t MP4RecordImpl::Initialize(const Params &params)
-{
-    if (init_)
-        return static_cast<int>(KDupInitialize);
-
-    params_ = params;
-    run_ = true;
-    thread_ = std::unique_ptr<std::thread>(new std::thread([this]() {
-        RecordThread();
+        muxer.Close();
+        free(temp_buf);
     }));
 
     init_ = true;

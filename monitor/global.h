@@ -94,6 +94,7 @@
 #define DETECT_MEM_BLK_NUM 1                         //检测模块内存块数
 #define RECORD_DIR_FORMAT "%Y_%m_%d"                 //录制目录名称(日期格式)
 #define RECORD_FILE_FORMAT "%H_%M_%S"                //录制文件名称(日期格式)
+#define BUFFER_LEN 524288                            //缓存大小
 
 #define NVR_ISP_DEV 0         //ISP设备
 #define NVR_VI_DEV 0          //VI设备

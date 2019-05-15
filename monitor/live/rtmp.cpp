@@ -38,9 +38,15 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
 
         bool init = false;
 
+        uint8_t *temp_buf = (uint8_t *)malloc(BUFFER_LEN);
+        if (!temp_buf)
+        {
+            log_e("malloc buffer failed");
+            return;
+        }
+
         while (run_)
         {
-
             if (!init)
             {
                 wait_sps = true;
@@ -52,36 +58,42 @@ int32_t RtmpLiveImpl::Initialize(const Params &params)
                 }
                 init = true;
             }
-
-            std::unique_lock<std::mutex> lock(mux_);
-            while (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
             {
-                if (frame.type == H264Frame::NaluType::SPS)
-                    wait_sps = false;
-
-                frame.data = buffer_.GetCurrentPos();
-                if (init && !wait_sps)
+                std::unique_lock<std::mutex> lock(mux_);
+                if (buffer_.Get((uint8_t *)&frame, sizeof(frame)))
                 {
-                    code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
-                    if (KSuccess != code)
+                    memcpy(temp_buf, buffer_.GetCurrentPos(), frame.len);
+                    frame.data = temp_buf;
+                    if (!buffer_.Consume(frame.len))
                     {
-                        log_w("rtmp connection break,try to reconnect...");
-                        rtmp_streamer.Close();
-                        init = false;
+                        log_e("consme data from buffer failed,rest data not enough");
+                        return;
                     }
                 }
-                if (!buffer_.Consume(frame.len))
+                else if (run_)
                 {
-                    log_e("consme data from buffer failed,rest data not enough");
-                    return;
+                    cond_.wait(lock);
+                    continue;
                 }
             }
 
-            if (run_ && init)
-                cond_.wait(lock);
+            if (frame.type == H264Frame::NaluType::SPS)
+                wait_sps = false;
+
+            if (init && !wait_sps)
+            {
+                code = static_cast<err_code>(rtmp_streamer.WriteVideoFrame(frame));
+                if (KSuccess != code)
+                {
+                    log_w("rtmp connection break,try to reconnect...");
+                    rtmp_streamer.Close();
+                    init = false;
+                }
+            }
         }
 
         rtmp_streamer.Close();
+        free(temp_buf);
     }));
 
     init_ = true;
