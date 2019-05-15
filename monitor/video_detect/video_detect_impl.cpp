@@ -200,6 +200,7 @@ void VideoDetectImpl::OnFrame(const VIDEO_FRAME_INFO_S &frame)
 
     ccbloc = (IVE_CCBLOB_S *)(dst_mem_info_.pu8VirAddr);
 
+    log_d("move objs num:%d,trigger thresh:%d", ccbloc->u8RegionNum, trigger_thresh_);
     mux_.lock();
     if (ccbloc->u8RegionNum >= trigger_thresh_ && listener_)
         listener_->OnTrigger(ccbloc->u8RegionNum);

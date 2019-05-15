@@ -140,7 +140,7 @@ int32_t VideoProcessImpl::StartVPSSDetectChn(const Params &params)
     VPSS_CHN_ATTR_S chn_attr;
     memset(&chn_attr, 0, sizeof(chn_attr));
     chn_attr.s32SrcFrameRate = FRAME_RATE;
-    chn_attr.s32DstFrameRate = params.frame_rate;
+    chn_attr.s32DstFrameRate = 5;
 
     ret = HI_MPI_VPSS_SetChnAttr(NVR_VPSS_GRP, NVR_VPSS_DETECT_CHN, &chn_attr);
     if (HI_SUCCESS != ret)

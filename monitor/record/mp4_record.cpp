@@ -117,6 +117,7 @@ void MP4RecordImpl::RecordThread()
 
         if (RecordNeedToQuit())
         {
+            lock.unlock();
             muxer.Close();
             init = false;
             while (run_ && RecordNeedToQuit())
@@ -124,12 +125,14 @@ void MP4RecordImpl::RecordThread()
         }
         else if (RecordNeedToSegment(start_time))
         {
+            lock.unlock();
             muxer.Close();
             init = false;
         }
-
-        if (run_ && init_)
+        else if (run_)
+        {
             cond_.wait(lock);
+        }
     }
     muxer.Close();
 }
