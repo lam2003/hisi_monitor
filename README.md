@@ -23,5 +23,6 @@ make
 ./monitor -c [配置文件路径]
 ```
 
-*欢迎问题反馈，交流学习，联系方式 linmin093@gmail.com*
 
+
+*出售HI3531/HI3532级联板 课堂录播完整解决方案，带源码出售，联系方式 notify@linmin.xyz*
